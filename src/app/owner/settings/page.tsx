@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Save,
@@ -107,26 +107,36 @@ function Toggle({
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<"branding" | "service">("service");
   const [settings, setSettings] = useState<Settings | null>(null);
+  const savedSettingsRef = useRef<string>("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const isDirty = useCallback(() => {
+    if (!settings || !savedSettingsRef.current) return false;
+    return JSON.stringify(settings) !== savedSettingsRef.current;
+  }, [settings]);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [holidayMonth, setHolidayMonth] = useState(new Date());
 
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
-      .then((data) => setSettings({
-        ...data,
-        restaurantName: data.restaurantName ?? "My Restaurant",
-        heroHeading: data.heroHeading ?? "Reserve Your\nTable.",
-        heroSubtext: data.heroSubtext ?? "Book your experience with us.",
-        iconType: data.iconType ?? "emoji",
-        iconValue: data.iconValue ?? "",
-        navIcon: data.navIcon ?? "utensils",
-        siteName: data.siteName ?? "",
-        colorPalette: data.colorPalette ?? "classic",
-        fontPairing: data.fontPairing ?? "serif-mono",
-      }))
+      .then((data) => {
+        const s = {
+          ...data,
+          restaurantName: data.restaurantName ?? "My Restaurant",
+          heroHeading: data.heroHeading ?? "Reserve Your\nTable.",
+          heroSubtext: data.heroSubtext ?? "Book your experience with us.",
+          iconType: data.iconType ?? "emoji",
+          iconValue: data.iconValue ?? "",
+          navIcon: data.navIcon ?? "utensils",
+          siteName: data.siteName ?? "",
+          colorPalette: data.colorPalette ?? "classic",
+          fontPairing: data.fontPairing ?? "serif-mono",
+        };
+        setSettings(s);
+        savedSettingsRef.current = JSON.stringify(s);
+      })
       .catch(console.error);
 
     fetch("/api/settings")
@@ -136,6 +146,17 @@ export default function SettingsPage() {
       })
       .catch(console.error);
   }, []);
+
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (isDirty()) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   // Load Google Fonts for font pairing previews
   useEffect(() => {
