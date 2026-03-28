@@ -123,7 +123,7 @@ export default function CalendarPage() {
     : [];
 
   return (
-    <div className="max-w-[1200px] mx-auto">
+    <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-2">
         <div>
