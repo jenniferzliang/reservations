@@ -87,4 +87,5 @@ model Settings {
   iconType            String  @default("emoji")
   iconValue           String  @default("")
   navIcon             String  @default("utensils")
+  siteName            String  @default("")
 }

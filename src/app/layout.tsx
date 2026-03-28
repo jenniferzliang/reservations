@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
+import { prisma } from "@/lib/prisma";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -9,10 +10,16 @@ const playfair = Playfair_Display({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
-  title: process.env.NEXT_PUBLIC_SITE_NAME || "Restaurant Reservations",
-  description: "Online reservation system — book your table in seconds.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await prisma.settings.findFirst({
+    select: { restaurantName: true, siteName: true },
+  });
+  const name = settings?.siteName || settings?.restaurantName || "Restaurant Reservations";
+  return {
+    title: name,
+    description: `Online reservation system for ${name}.`,
+  };
+}
 
 export default function RootLayout({
   children,

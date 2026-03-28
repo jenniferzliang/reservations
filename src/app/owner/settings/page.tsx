@@ -58,6 +58,7 @@ interface Settings {
   iconType: string;
   iconValue: string;
   navIcon: string;
+  siteName: string;
 }
 
 const DAYS = [
@@ -104,7 +105,7 @@ function Toggle({
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"appearance" | "service">("service");
+  const [activeTab, setActiveTab] = useState<"branding" | "service">("service");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -122,6 +123,7 @@ export default function SettingsPage() {
         iconType: data.iconType ?? "emoji",
         iconValue: data.iconValue ?? "",
         navIcon: data.navIcon ?? "utensils",
+        siteName: data.siteName ?? "",
         colorPalette: data.colorPalette ?? "classic",
         fontPairing: data.fontPairing ?? "serif-mono",
       }))
@@ -172,6 +174,7 @@ export default function SettingsPage() {
       iconType: settings.iconType,
       iconValue: settings.iconValue,
       navIcon: settings.navIcon,
+      siteName: settings.siteName,
     };
     if (settings.googleCalendarId) {
       payload.googleCalendarId = settings.googleCalendarId;
@@ -284,23 +287,23 @@ export default function SettingsPage() {
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("appearance")}
+          onClick={() => setActiveTab("branding")}
           className={`font-mono text-[11px] uppercase tracking-[2px] px-5 py-3 cursor-pointer transition-colors border-b-2 -mb-px ${
-            activeTab === "appearance"
+            activeTab === "branding"
               ? "border-[#0D0D0D] text-[#0D0D0D]"
               : "border-transparent text-[#888888] hover:text-[#0D0D0D]"
           }`}
         >
-          Appearance
+          Branding
         </button>
       </div>
 
-      {activeTab === "appearance" && (
+      {activeTab === "branding" && (
         <>
-          {/* Branding */}
+          {/* Name & Logo */}
           <section className="mb-10">
             <h2 className="font-mono text-[10px] uppercase tracking-[2px] text-[#888888] mb-4">
-              Branding
+              Name & Logo
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -318,10 +321,10 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
-                  Tab Icon
+                  Logo
                 </label>
                 <p className="font-mono text-[10px] text-[#888888] mb-2">
-                  Upload a custom image, or the nav icon will be used.
+                  Upload a custom image, or the nav icon will be used. Also shown as the browser tab icon.
                 </p>
                 <div className="flex items-center gap-2">
                   <label className="inline-block border border-[#E0E0E0] rounded-none px-3 py-2 font-mono text-[10px] uppercase tracking-[1px] cursor-pointer hover:border-[#888888]">
@@ -393,6 +396,32 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Site Content */}
+          <section className="mb-10">
+            <h2 className="font-mono text-[10px] uppercase tracking-[2px] text-[#888888] mb-4">
+              Site Content
+            </h2>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
+                  Public Site Name
+                </label>
+                <input
+                  type="text"
+                  value={settings.siteName}
+                  onChange={(e) =>
+                    setSettings({ ...settings, siteName: e.target.value })
+                  }
+                  placeholder={settings.restaurantName || "Restaurant Reservations"}
+                  className="w-full border border-[#E0E0E0] rounded-none px-3 py-2 font-mono text-sm"
+                />
+                <p className="font-mono text-[10px] text-[#888888] mt-1">
+                  Shown in the browser tab. Defaults to restaurant name if empty.
+                </p>
+              </div>
               <div>
                 <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
                   Hero Heading
@@ -425,11 +454,14 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          {/* Color Palette */}
+          {/* Theme */}
           <section className="mb-10">
             <h2 className="font-mono text-[10px] uppercase tracking-[2px] text-[#888888] mb-4">
-              Color Palette
+              Theme
             </h2>
+            <h3 className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888] mb-3">
+              Color Palette
+            </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {PALETTE_IDS.map((id) => {
                 const palette = PALETTES[id];
@@ -472,13 +504,9 @@ export default function SettingsPage() {
                 );
               })}
             </div>
-          </section>
-
-          {/* Font Pairing */}
-          <section className="mb-10">
-            <h2 className="font-mono text-[10px] uppercase tracking-[2px] text-[#888888] mb-4">
+            <h3 className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888] mt-6 mb-3">
               Font Pairing
-            </h2>
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {FONT_PAIRING_IDS.map((id) => {
                 const fp = FONT_PAIRINGS[id];

@@ -52,6 +52,7 @@ export const UpdateSettingsSchema = z.object({
   iconType: z.enum(["emoji", "image"]).optional(),
   iconValue: z.string().max(500000).optional(),
   navIcon: z.enum(["coffee", "croissant", "utensils"]).optional(),
+  siteName: z.string().max(100).optional(),
 });
 
 export const AuthSchema = z.object({
