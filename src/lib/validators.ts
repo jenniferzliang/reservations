@@ -32,8 +32,17 @@ export const MergeGuestsSchema = z.object({
   targetGuestId: z.string().uuid(),
 });
 
+const DayConfigSchema = z.object({
+  open: z.boolean(),
+  start: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format").optional(),
+  end: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format").optional(),
+}).refine(
+  (d) => !d.open || (d.start && d.end),
+  { message: "Open days must have start and end times" }
+);
+
 export const UpdateSettingsSchema = z.object({
-  operatingHours: z.record(z.string(), z.any()).optional(),
+  operatingHours: z.record(z.string(), DayConfigSchema).optional(),
   maxSeatingDuration: z.number().int().min(15).max(300).optional(),
   resetBuffer: z.number().int().min(0).max(120).optional(),
   maxTotalGuests: z.number().int().min(1).max(100).optional(),
