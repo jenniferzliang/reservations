@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  ARRIVED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Guest {
+  id         String   @id @default(uuid())
+  phone      String
+  firstName  String
+  lastName   String
+  instagram  String?
+  visitCount Int      @default(1)
+  firstVisit DateTime @default(now())
+  lastVisit  DateTime @default(now())
+  totalGuests Int     @default(0)
+  allergies  String?
+  notes      String?
+  mergedFrom String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reservations Reservation[]
+
+  @@unique([firstName, lastName, phone])
+}
+
+model Reservation {
+  id        String   @id @default(uuid())
+  date      String   // "YYYY-MM-DD"
+  time      String   // "HH:mm"
+  partySize Int
+  firstName String
+  lastName  String
+  phone     String
+  instagram String?
+  allergies String?
+  specialNotes String?
+  isWalkIn  Boolean @default(false)
+  status    ReservationStatus @default(CONFIRMED)
+  googleCalendarEventId String?
+  guestId   String
+  guest     Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date, time])
+  @@index([status])
+  @@index([phone])
+}
+
+model BlockedDate {
+  id   String @id @default(uuid())
+  date String @unique // "YYYY-MM-DD"
+}
+
+model Settings {
+  id                  String  @id @default("default")
+  operatingHours      Json    // { monday: { open: false }, tuesday: { open: true, start: "07:00", end: "10:15" }, ... }
+  maxSeatingDuration  Int     @default(75)
+  resetBuffer         Int     @default(15)
+  maxTotalGuests      Int     @default(8)
+  slotInterval        Int     @default(15)
+  bookingWindowDays   Int     @default(30)
+  autoMergeDuplicates Boolean @default(true)
+  googleAccessToken   String?
+  googleRefreshToken  String?
+  googleCalendarId    String?
+  googleAccountEmail  String?
+  timezone            String  @default("America/New_York")
+  colorPalette        String  @default("classic")
+  fontPairing         String  @default("serif-mono")
+  restaurantName      String  @default("My Restaurant")
+  heroHeading         String  @default("Reserve Your\nTable.")
+  heroSubtext         String  @default("Book your experience with us.")
+  iconType            String  @default("emoji")
+  iconValue           String  @default("")
+}

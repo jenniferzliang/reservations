@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #FFFFFF;
+  --color-text-primary: #0D0D0D;
+  --color-text-muted: #AAAAAA;
+  --color-border: #E0E0E0;
+  --color-selected-bg: #0D0D0D;
+  --color-selected-text: #FFFFFF;
+  --color-accent-soft: #FDE8E8;
+  --color-btn-bg: #0D0D0D;
+  --color-btn-text: #FFFFFF;
+  --color-hover-bg: #F5F5F5;
+  --color-error: #C45C4A;
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body: "Courier New", Courier, monospace;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
+  --color-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-selected: var(--color-selected-bg);
+  --color-selected-text: var(--color-selected-text);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-btn-bg: var(--color-btn-bg);
+  --color-btn-text: var(--color-btn-text);
+  --color-hover: var(--color-hover-bg);
+  --color-error: var(--color-error);
+  --font-mono: var(--font-body);
+  --font-serif: var(--font-heading);
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
