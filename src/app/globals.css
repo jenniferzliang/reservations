@@ -12,6 +12,13 @@
   --color-btn-text: #FFFFFF;
   --color-hover-bg: #F5F5F5;
   --color-error: #C45C4A;
+  --color-success: #10B981;
+  --color-success-bg: #ECFDF5;
+  --color-warning-bg: #FDF6EE;
+  --color-warning-text: #8B6914;
+  --color-warning-border: #D4A574;
+  --color-text-secondary: #888888;
+  --color-text-tertiary: #666666;
   --font-heading: "Playfair Display", Georgia, serif;
   --font-body: "Courier New", Courier, monospace;
 }
@@ -28,6 +35,13 @@
   --color-btn-text: var(--color-btn-text);
   --color-hover: var(--color-hover-bg);
   --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-warning-text: var(--color-warning-text);
+  --color-warning-border: var(--color-warning-border);
+  --color-secondary: var(--color-text-secondary);
+  --color-tertiary: var(--color-text-tertiary);
   --font-mono: var(--font-body);
   --font-serif: var(--font-heading);
 }

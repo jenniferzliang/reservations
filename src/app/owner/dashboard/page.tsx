@@ -234,7 +234,7 @@ export default function ManifestPage() {
           <h1 className="font-mono text-2xl font-bold uppercase tracking-[2px] mb-1">
             Daily Manifest
           </h1>
-          <p className="font-serif text-base italic text-[#666666]">
+          <p className="font-serif text-base italic text-tertiary">
             {format(dateObj, "EEEE, MMMM d, yyyy")}
           </p>
         </div>
@@ -243,13 +243,13 @@ export default function ManifestPage() {
             type="date"
             value={dateParam}
             onChange={(e) => setDateParam(e.target.value)}
-            className="font-mono text-xs border border-[#E0E0E0] rounded-none px-2 py-1 sr-only"
+            className="font-mono text-xs border border-border rounded-none px-2 py-1 sr-only"
             id="date-picker"
           />
           <label htmlFor="date-picker">
             {dateParam !== format(new Date(), "yyyy-MM-dd") && (
               <button
-                className="font-mono text-[10px] uppercase tracking-[1px] border border-[#E0E0E0] bg-transparent px-3 py-2 rounded-none cursor-pointer hover:bg-[#F5F5F5] transition-colors mr-3"
+                className="font-mono text-[10px] uppercase tracking-[1px] border border-border bg-transparent px-3 py-2 rounded-none cursor-pointer hover:bg-hover transition-colors mr-3"
                 onClick={() => setDateParam(format(new Date(), "yyyy-MM-dd"))}
               >
                 Today
@@ -257,7 +257,7 @@ export default function ManifestPage() {
             )}
           </label>
           <button
-            className="font-mono text-[11px] uppercase tracking-[2px] bg-[#0D0D0D] text-white border-none px-5 py-3 rounded-none cursor-pointer hover:opacity-90 transition-opacity flex items-center gap-2"
+            className="font-mono text-[11px] uppercase tracking-[2px] bg-foreground text-white border-none px-5 py-3 rounded-none cursor-pointer hover:opacity-90 transition-opacity flex items-center gap-2"
             onClick={() => setShowQuickAdd(true)}
           >
             <span className="text-base leading-none">+</span> Quick Add
@@ -266,7 +266,7 @@ export default function ManifestPage() {
       </div>
 
       {/* Stats */}
-      <div className="border border-[#E0E0E0] rounded-none grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-[#E0E0E0] mb-8">
+      <div className="border border-border rounded-none grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border mb-8">
         {[
           { value: confirmed.length, label: "Confirmed" },
           { value: seated.length, label: "Seated" },
@@ -278,7 +278,7 @@ export default function ManifestPage() {
             className="text-center py-5"
           >
             <p className="font-mono text-2xl font-bold">{stat.value}</p>
-            <p className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888]">
+            <p className="font-mono text-[10px] uppercase tracking-[1px] text-secondary">
               {stat.label}
             </p>
           </div>
@@ -287,7 +287,7 @@ export default function ManifestPage() {
 
       {/* Reservation Cards */}
       {sortedReservations.length === 0 ? (
-        <p className="font-serif text-sm italic text-[#888888] text-center py-12">
+        <p className="font-serif text-sm italic text-secondary text-center py-12">
           No reservations for this day.
         </p>
       ) : (
@@ -304,49 +304,49 @@ export default function ManifestPage() {
                 key={r.id}
                 className={`border rounded-none ${
                   isNoShow || isCompleted
-                    ? "border-[#E0E0E0] opacity-40"
+                    ? "border-border opacity-40"
                     : isConfirmed && slotInfo?.color === "red"
-                    ? "border-[#C45C4A] border-l-4"
-                    : "border-[#E0E0E0]"
+                    ? "border-error border-l-4"
+                    : "border-border"
                 }`}
               >
                 {/* Card header */}
                 <div
                   className={`flex items-center justify-between px-6 py-3 ${
                     isSeated
-                      ? "bg-[#ECFDF5] border-b-2 border-b-[#EF4444]"
-                      : "border-b border-[#F0F0F0]"
+                      ? "bg-success-bg border-b-2 border-b-error"
+                      : "border-b border-border"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span
                       className={`w-2 h-2 rounded-full ${
                         isSeated
-                          ? "bg-[#10B981]"
+                          ? "bg-success"
                           : isNoShow
-                          ? "bg-[#CCCCCC]"
+                          ? "bg-muted"
                           : isCompleted
-                          ? "bg-[#CCCCCC]"
+                          ? "bg-muted"
                           : slotInfo?.color === "red"
-                          ? "bg-[#C45C4A]"
+                          ? "bg-error"
                           : slotInfo?.color === "green"
-                          ? "bg-[#10B981]"
-                          : "bg-[#CCCCCC]"
+                          ? "bg-success"
+                          : "bg-muted"
                       }`}
                     />
                     <span
                       className={`font-mono text-[10px] uppercase tracking-[1px] ${
                         isSeated
-                          ? "text-[#10B981]"
+                          ? "text-success"
                           : isNoShow
-                          ? "text-[#888888]"
+                          ? "text-secondary"
                           : isCompleted
-                          ? "text-[#888888]"
+                          ? "text-secondary"
                           : slotInfo?.color === "red"
-                          ? "text-[#C45C4A] font-bold"
+                          ? "text-error font-bold"
                           : slotInfo?.color === "green"
-                          ? "text-[#10B981]"
-                          : "text-[#888888]"
+                          ? "text-success"
+                          : "text-secondary"
                       }`}
                     >
                       {isSeated
@@ -361,14 +361,14 @@ export default function ManifestPage() {
                   <span
                     className={`font-mono text-[10px] uppercase tracking-[1px] ${
                       isSeated
-                        ? "text-[#10B981]"
+                        ? "text-success"
                         : isNoShow || isCompleted
-                        ? "text-[#888888]"
+                        ? "text-secondary"
                         : slotInfo?.color === "red"
-                        ? "text-[#C45C4A] font-bold"
+                        ? "text-error font-bold"
                         : slotInfo?.color === "green"
-                        ? "text-[#10B981]"
-                        : "text-[#888888]"
+                        ? "text-success"
+                        : "text-secondary"
                     }`}
                   >
                     {getTimeRange(r.time)}
@@ -383,17 +383,17 @@ export default function ManifestPage() {
                         {r.firstName} {r.lastName}
                       </span>
                       {r.isWalkIn && (
-                        <span className="font-mono text-[10px] border border-[#D4A574] bg-[#FDF6EE] text-[#8B6914] px-2 py-0.5 rounded-none uppercase">
+                        <span className="font-mono text-[10px] border border-warning-border bg-warning-bg text-warning-text px-2 py-0.5 rounded-none uppercase">
                           Walk-in
                         </span>
                       )}
                       {r.guest.visitCount > 1 && (
-                        <span className="font-mono text-[10px] border border-[#E0E0E0] px-2 py-0.5 rounded-none uppercase">
+                        <span className="font-mono text-[10px] border border-border px-2 py-0.5 rounded-none uppercase">
                           {r.guest.visitCount}&times; guest
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-[#888888]">
+                    <div className="flex items-center gap-4 text-secondary">
                       <span className="font-mono text-xs inline-flex items-center gap-1">
                         <InstagramIcon />
                         {r.instagram ? `@${r.instagram.replace(/^@/, "")}` : ""}
@@ -405,17 +405,17 @@ export default function ManifestPage() {
                     </div>
                     {r.allergies && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        <span className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888] inline-flex items-center gap-1">
-                          <AlertTriangle size={11} strokeWidth={1.5} className="text-[#C45C4A] relative top-[0.5px]" />
+                        <span className="font-mono text-[10px] uppercase tracking-[1px] text-secondary inline-flex items-center gap-1">
+                          <AlertTriangle size={11} strokeWidth={1.5} className="text-error relative top-[0.5px]" />
                           Allergy:
                         </span>
-                        <span className="font-mono text-[10px] text-[#C45C4A]">
+                        <span className="font-mono text-[10px] text-error">
                           {r.allergies}
                         </span>
                       </div>
                     )}
                     {r.specialNotes && (
-                      <p className="font-serif text-xs italic text-[#888] mt-1.5">
+                      <p className="font-serif text-xs italic text-secondary mt-1.5">
                         &ldquo;{r.specialNotes}&rdquo;
                       </p>
                     )}
@@ -464,7 +464,7 @@ export default function ManifestPage() {
         >
           <div className="absolute inset-0 bg-black/20" />
           <div
-            className="relative bg-white border border-[#E0E0E0] rounded-none shadow-lg max-w-[560px] w-full mx-4"
+            className="relative bg-white border border-border rounded-none shadow-lg max-w-[560px] w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -474,7 +474,7 @@ export default function ManifestPage() {
               </h3>
               <button
                 onClick={closeQuickAdd}
-                className="cursor-pointer hover:opacity-60 border border-[#E0E0E0] rounded-full p-1"
+                className="cursor-pointer hover:opacity-60 border border-border rounded-full p-1"
               >
                 <X size={16} strokeWidth={1.5} />
               </button>
@@ -485,7 +485,7 @@ export default function ManifestPage() {
               {/* Row 1: Phone + Party Size */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
                     Phone *
                   </label>
                   <input
@@ -494,20 +494,20 @@ export default function ManifestPage() {
                     autoFocus
                     value={quickAdd.phone}
                     onChange={(e) => handlePhoneChange(e.target.value)}
-                    className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                    className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
                   />
                   {phoneLookupLoading && (
-                    <p className="font-mono text-[10px] text-[#888888] mt-1">Looking up guest...</p>
+                    <p className="font-mono text-[10px] text-secondary mt-1">Looking up guest...</p>
                   )}
                 </div>
                 <div>
-                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
                     Party Size *
                   </label>
                   <select
                     value={quickAdd.partySize}
                     onChange={(e) => setQuickAdd({ ...quickAdd, partySize: e.target.value })}
-                    className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D] bg-white appearance-none cursor-pointer"
+                    className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground bg-white appearance-none cursor-pointer"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                       <option key={n} value={n}>{n}</option>
@@ -522,12 +522,12 @@ export default function ManifestPage() {
                 <button
                   type="button"
                   onClick={acceptGuestSuggestion}
-                  className="w-full text-left border border-[#10B981] bg-[#ECFDF5] px-4 py-3 mb-4 cursor-pointer hover:bg-[#D1FAE5] transition-colors"
+                  className="w-full text-left border border-success bg-success-bg px-4 py-3 mb-4 cursor-pointer hover:bg-success-bg transition-colors"
                 >
-                  <p className="font-mono text-xs font-bold text-[#0D0D0D]">
+                  <p className="font-mono text-xs font-bold text-foreground">
                     Welcome back, {guestSuggestion.firstName}!
                   </p>
-                  <p className="font-mono text-[10px] text-[#666666] mt-0.5">
+                  <p className="font-mono text-[10px] text-tertiary mt-0.5">
                     {guestSuggestion.visitCount}&times; guest
                     {guestSuggestion.instagram ? ` · @${guestSuggestion.instagram.replace(/^@/, "")}` : ""}
                     {" — tap to fill"}
@@ -538,7 +538,7 @@ export default function ManifestPage() {
               {/* Row 2: Name + Instagram */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
                     Name *
                   </label>
                   <input
@@ -546,11 +546,11 @@ export default function ManifestPage() {
                     placeholder="First name"
                     value={quickAdd.firstName}
                     onChange={(e) => setQuickAdd({ ...quickAdd, firstName: e.target.value })}
-                    className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                    className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                  <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
                     Instagram
                   </label>
                   <input
@@ -558,25 +558,25 @@ export default function ManifestPage() {
                     placeholder="@handle"
                     value={quickAdd.instagram}
                     onChange={(e) => setQuickAdd({ ...quickAdd, instagram: e.target.value })}
-                    className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                    className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
                   />
                 </div>
               </div>
 
               {/* Row 3: Allergies */}
               <div className="mb-4">
-                <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
                   Allergies
                 </label>
                 <input
                   type="text"
                   value={quickAdd.allergies}
                   onChange={(e) => setQuickAdd({ ...quickAdd, allergies: e.target.value })}
-                  className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                  className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
                 />
               </div>
 
-              <p className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888] mb-4">
+              <p className="font-mono text-[10px] uppercase tracking-[1px] text-secondary mb-4">
                 Will be checked in immediately at {format(new Date(), "h:mm a")}.
               </p>
 
@@ -584,14 +584,14 @@ export default function ManifestPage() {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={closeQuickAdd}
-                  className="font-mono text-[11px] uppercase tracking-[2px] border border-[#E0E0E0] bg-white text-[#0D0D0D] px-5 py-3 rounded-none cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+                  className="font-mono text-[11px] uppercase tracking-[2px] border border-border bg-white text-foreground px-5 py-3 rounded-none cursor-pointer hover:bg-hover transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleQuickAdd}
                   disabled={quickAddSubmitting || !quickAdd.firstName.trim() || !quickAdd.phone.trim()}
-                  className="font-mono text-[11px] uppercase tracking-[2px] bg-[#0D0D0D] text-white border-none px-5 py-3 rounded-none cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="font-mono text-[11px] uppercase tracking-[2px] bg-foreground text-white border-none px-5 py-3 rounded-none cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add & Seat
                 </button>
