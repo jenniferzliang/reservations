@@ -13,10 +13,8 @@ export function QuickAddModal({ dateParam, onClose, onAdded }: QuickAddModalProp
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    instagram: "",
     phone: "",
     partySize: "2",
-    allergies: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const { suggestion, loading: phoneLookupLoading, lookup, clear } = usePhoneLookup();
@@ -32,8 +30,6 @@ export function QuickAddModal({ dateParam, onClose, onAdded }: QuickAddModalProp
       ...prev,
       firstName: suggestion.firstName,
       lastName: suggestion.lastName || "",
-      instagram: suggestion.instagram || "",
-      allergies: suggestion.allergies || "",
     }));
   }
 
@@ -56,9 +52,7 @@ export function QuickAddModal({ dateParam, onClose, onAdded }: QuickAddModalProp
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           phone: form.phone.trim() || undefined,
-          instagram: form.instagram.trim() || undefined,
           partySize: parseInt(form.partySize),
-          allergies: form.allergies.trim() || undefined,
           isWalkIn: true,
         }),
       });
@@ -151,18 +145,16 @@ export function QuickAddModal({ dateParam, onClose, onAdded }: QuickAddModalProp
                 Welcome back, {suggestion.firstName}!
               </p>
               <p className="font-mono text-[10px] text-tertiary mt-0.5">
-                {suggestion.visitCount}&times; guest
-                {suggestion.instagram ? ` · @${suggestion.instagram.replace(/^@/, "")}` : ""}
-                {" — tap to fill"}
+                {suggestion.visitCount}&times; guest — tap to fill
               </p>
             </button>
           )}
 
-          {/* Row 2: Name + Instagram */}
+          {/* Row 2: First Name + Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
-                Name *
+                First Name *
               </label>
               <input
                 type="text"
@@ -174,29 +166,16 @@ export function QuickAddModal({ dateParam, onClose, onAdded }: QuickAddModalProp
             </div>
             <div>
               <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
-                Instagram
+                Last Name
               </label>
               <input
                 type="text"
-                placeholder="@handle"
-                value={form.instagram}
-                onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+                placeholder="Last name"
+                value={form.lastName}
+                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                 className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
               />
             </div>
-          </div>
-
-          {/* Row 3: Allergies */}
-          <div className="mb-4">
-            <label className="font-mono text-[10px] uppercase tracking-[1px] text-foreground mb-1.5 block">
-              Allergies
-            </label>
-            <input
-              type="text"
-              value={form.allergies}
-              onChange={(e) => setForm({ ...form, allergies: e.target.value })}
-              className="w-full border border-border rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-foreground"
-            />
           </div>
 
           <p className="font-mono text-[10px] uppercase tracking-[1px] text-secondary mb-4">
