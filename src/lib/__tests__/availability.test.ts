@@ -129,4 +129,108 @@ describe("getAvailability", () => {
     const result = await getAvailability("2026-03-23", "2026-03-23");
     expect(result[0].slots[0].currentGuests).toBe(0);
   });
+
+  it("a reservation at 09:00 counts toward later overlapping slots", async () => {
+    // occupancy = 60 + 15 = 75 min, so 09:00 reservation occupies through 10:14
+    mockReservations.mockResolvedValue([
+      { date: "2026-03-23", time: "09:00", partySize: 4 },
+    ]);
+    const result = await getAvailability("2026-03-23", "2026-03-23");
+    const slots = result[0].slots;
+
+    // Should count toward 09:00 through 10:00 (all within 75-min window)
+    expect(slots.find((s) => s.time === "09:00")!.currentGuests).toBe(4);
+    expect(slots.find((s) => s.time === "09:15")!.currentGuests).toBe(4);
+    expect(slots.find((s) => s.time === "09:30")!.currentGuests).toBe(4);
+    expect(slots.find((s) => s.time === "09:45")!.currentGuests).toBe(4);
+    expect(slots.find((s) => s.time === "10:00")!.currentGuests).toBe(4);
+
+    // 10:15 is at exactly 75 min — should NOT be counted (strict < comparison)
+    expect(slots.find((s) => s.time === "10:15")!.currentGuests).toBe(0);
+    expect(slots.find((s) => s.time === "10:30")!.currentGuests).toBe(0);
+    expect(slots.find((s) => s.time === "10:45")!.currentGuests).toBe(0);
+  });
+
+  it("a reservation at 10:00 counts toward earlier slot availability", async () => {
+    // A reservation at 10:00 should be counted when checking the 09:15 slot,
+    // because someone seated at 09:15 would still be there at 10:00
+    // (occupancy 75 min: 09:15 + 75 = 10:30)
+    // But the overlap check is from the reservation's perspective:
+    // resStart(10:00) <= slot(09:15)? No — so 09:15 is NOT affected.
+    // This is correct: the 10:00 reservation doesn't occupy the 09:15 slot.
+    mockReservations.mockResolvedValue([
+      { date: "2026-03-23", time: "10:00", partySize: 6 },
+    ]);
+    const result = await getAvailability("2026-03-23", "2026-03-23");
+    const slots = result[0].slots;
+
+    // Slots before 10:00 are unaffected by this reservation
+    expect(slots.find((s) => s.time === "09:00")!.currentGuests).toBe(0);
+    expect(slots.find((s) => s.time === "09:15")!.currentGuests).toBe(0);
+    expect(slots.find((s) => s.time === "09:30")!.currentGuests).toBe(0);
+    expect(slots.find((s) => s.time === "09:45")!.currentGuests).toBe(0);
+
+    // 10:00 onward is affected
+    expect(slots.find((s) => s.time === "10:00")!.currentGuests).toBe(6);
+    expect(slots.find((s) => s.time === "10:15")!.currentGuests).toBe(6);
+    expect(slots.find((s) => s.time === "10:30")!.currentGuests).toBe(6);
+    expect(slots.find((s) => s.time === "10:45")!.currentGuests).toBe(6);
+  });
+
+  it("earlier reservation overlaps with later reservation's slot", async () => {
+    // Reservation at 09:00 (occupancy 75 min, ends 10:15).
+    // Reservation at 10:00 (occupancy 75 min, ends 11:15).
+    // At slot 10:00: both reservations are counted (09:00 res is still seated).
+    mockReservations.mockResolvedValue([
+      { date: "2026-03-23", time: "09:00", partySize: 8 },
+      { date: "2026-03-23", time: "10:00", partySize: 5 },
+    ]);
+    const result = await getAvailability("2026-03-23", "2026-03-23");
+    const slots = result[0].slots;
+
+    // 09:00–09:45: only the 09:00 reservation
+    expect(slots.find((s) => s.time === "09:00")!.currentGuests).toBe(8);
+    expect(slots.find((s) => s.time === "09:45")!.currentGuests).toBe(8);
+
+    // 10:00: both overlap (09:00 res runs until 10:15)
+    expect(slots.find((s) => s.time === "10:00")!.currentGuests).toBe(13);
+
+    // 10:15: only the 10:00 reservation (09:00 res ends at exactly 10:15, excluded by <)
+    expect(slots.find((s) => s.time === "10:15")!.currentGuests).toBe(5);
+  });
+
+  it("multiple simultaneous reservations sum their party sizes", async () => {
+    mockReservations.mockResolvedValue([
+      { date: "2026-03-23", time: "09:00", partySize: 6 },
+      { date: "2026-03-23", time: "09:00", partySize: 4 },
+      { date: "2026-03-23", time: "09:00", partySize: 3 },
+    ]);
+    const result = await getAvailability("2026-03-23", "2026-03-23");
+    const slot = result[0].slots.find((s) => s.time === "09:00")!;
+    expect(slot.currentGuests).toBe(13);
+    expect(slot.isFull).toBe(false);
+
+    // Also summed at 09:30 (all still within 75-min window)
+    const later = result[0].slots.find((s) => s.time === "09:30")!;
+    expect(later.currentGuests).toBe(13);
+  });
+
+  it("marks slot full and caps availability when total meets maxTotalGuests", async () => {
+    mockReservations.mockResolvedValue([
+      { date: "2026-03-23", time: "09:00", partySize: 12 },
+      { date: "2026-03-23", time: "09:15", partySize: 8 },
+    ]);
+    const result = await getAvailability("2026-03-23", "2026-03-23");
+    const slots = result[0].slots;
+
+    // At 09:15: 12 (still seated from 09:00) + 8 = 20 = maxTotalGuests → full
+    const slot = slots.find((s) => s.time === "09:15")!;
+    expect(slot.currentGuests).toBe(20);
+    expect(slot.isFull).toBe(true);
+
+    // At 09:00: only the 12-person reservation → not full
+    const earlier = slots.find((s) => s.time === "09:00")!;
+    expect(earlier.currentGuests).toBe(12);
+    expect(earlier.isFull).toBe(false);
+  });
 });
