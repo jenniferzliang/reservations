@@ -331,17 +331,30 @@ export default function BookingPage() {
             02 &mdash; Choose Your Time
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {selectedDaySlots.filter((slot) => !slot.isFull).map((slot) => {
+            {selectedDaySlots.map((slot) => {
               const timeObj = parse(slot.time, "HH:mm", new Date());
+              const remaining = slot.maxCapacity - slot.currentGuests;
+              const isLimited = !slot.isFull && remaining <= 3;
               return (
                 <SelectionCard
                   key={slot.time}
                   selected={selectedTime === slot.time}
+                  disabled={slot.isFull}
                   onClick={() => handleTimeSelect(slot.time)}
                 >
                   <span className="font-mono text-xs tracking-[0.5px]">
                     {format(timeObj, "h:mm a")}
                   </span>
+                  {slot.isFull && (
+                    <span className="block font-mono text-[9px] uppercase tracking-[1px] mt-0.5">
+                      Full
+                    </span>
+                  )}
+                  {isLimited && (
+                    <span className="block font-mono text-[9px] uppercase tracking-[1px] mt-0.5 text-muted">
+                      {remaining} {remaining === 1 ? "spot" : "spots"} left
+                    </span>
+                  )}
                 </SelectionCard>
               );
             })}
