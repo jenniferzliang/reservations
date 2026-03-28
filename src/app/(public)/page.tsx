@@ -7,20 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
-
-interface SlotInfo {
-  time: string;
-  currentGuests: number;
-  maxCapacity: number;
-  isFull: boolean;
-}
-
-interface DayAvailability {
-  date: string;
-  dayOfWeek: string;
-  isOpen: boolean;
-  slots: SlotInfo[];
-}
+import type { SlotInfo, DayAvailability } from "@/lib/availability";
 
 interface FormData {
   firstName: string;

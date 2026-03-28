@@ -38,14 +38,14 @@ interface DayConfig {
   end?: string; // "HH:mm"
 }
 
-interface SlotInfo {
+export interface SlotInfo {
   time: string; // "HH:mm"
   currentGuests: number;
   maxCapacity: number;
   isFull: boolean;
 }
 
-interface DayAvailability {
+export interface DayAvailability {
   date: string; // "YYYY-MM-DD"
   dayOfWeek: string;
   isOpen: boolean;
