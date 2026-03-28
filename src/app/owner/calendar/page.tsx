@@ -255,7 +255,7 @@ export default function CalendarPage() {
                           className="font-mono text-[10px] px-1.5 py-0.5 rounded-none mb-0.5 truncate"
                           style={{ backgroundColor: colors.bg, color: colors.text }}
                         >
-                          {formatTime12(r.time)} {r.firstName} {r.lastName.charAt(0)}…
+                          {formatTime12(r.time)} {r.firstName} {r.lastName.charAt(0)}.
                         </div>
                       );
                     })}
