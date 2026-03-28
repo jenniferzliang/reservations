@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { format, parse, addDays } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SelectionCard } from "@/components/ui/SelectionCard";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -49,6 +50,7 @@ const ALL_PARTY_OPTIONS = [
 
 export default function BookingPage() {
   const [availability, setAvailability] = useState<DayAvailability[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -83,17 +85,27 @@ export default function BookingPage() {
       .catch(console.error);
   }, []);
 
+  const maxWeekOffset = useMemo(() => {
+    if (availability.length === 0) return 0;
+    return Math.max(0, Math.ceil(availability.length / 7) - 1);
+  }, [availability]);
+
   const weekAvailability = useMemo(() => {
     const today = new Date();
+    const startDay = weekOffset * 7;
     const days: DayAvailability[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = startDay; i < startDay + 7; i++) {
       const d = addDays(today, i);
       const dateStr = format(d, "yyyy-MM-dd");
       const existing = availability.find((a) => a.date === dateStr);
-      days.push(existing || { date: dateStr, dayOfWeek: format(d, "EEEE"), isOpen: false, slots: [] });
+      if (existing) {
+        days.push(existing);
+      } else if (i < availability.length) {
+        days.push({ date: dateStr, dayOfWeek: format(d, "EEEE"), isOpen: false, slots: [] });
+      }
     }
     return days;
-  }, [availability]);
+  }, [availability, weekOffset]);
 
   const selectedDaySlots = useMemo(() => {
     const slots = availability.find((d) => d.date === selectedDate)?.slots || [];
@@ -264,9 +276,25 @@ export default function BookingPage() {
             01 &mdash; Choose a Day
           </p>
           {weekAvailability.length > 0 && (
-            <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted">
-              {format(parse(weekAvailability[0].date, "yyyy-MM-dd", new Date()), "MMM d")} &ndash; {format(parse(weekAvailability[6].date, "yyyy-MM-dd", new Date()), "MMM d")}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setWeekOffset((o) => Math.max(0, o - 1))}
+                disabled={weekOffset === 0}
+                className="cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed hover:opacity-60 transition-opacity bg-transparent border-none p-0"
+              >
+                <ChevronLeft size={16} strokeWidth={1.5} />
+              </button>
+              <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted">
+                {format(parse(weekAvailability[0].date, "yyyy-MM-dd", new Date()), "MMM d")} &ndash; {format(parse(weekAvailability[weekAvailability.length - 1].date, "yyyy-MM-dd", new Date()), "MMM d")}
+              </span>
+              <button
+                onClick={() => setWeekOffset((o) => Math.min(maxWeekOffset, o + 1))}
+                disabled={weekOffset >= maxWeekOffset}
+                className="cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed hover:opacity-60 transition-opacity bg-transparent border-none p-0"
+              >
+                <ChevronRight size={16} strokeWidth={1.5} />
+              </button>
+            </div>
           )}
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-7 sm:overflow-x-visible sm:pb-0">
