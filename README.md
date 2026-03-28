@@ -1,119 +1,321 @@
-# Reservations — Restaurant Reservation Template
+# Reservations — Open Source Restaurant Booking System
 
-A ready-to-fork reservation system for restaurants. Includes a public booking flow, owner portal (dashboard, calendar, guest management, analytics), and Google Calendar integration.
+A complete, self-hosted reservation system you can fork and make your own. Guests book through a clean public page; you manage everything from a private owner portal.
 
-Fork this repo, configure your restaurant's details, deploy, and you're live.
+**What's included:**
+- Public booking page with real-time availability
+- Owner portal: dashboard, calendar, guest profiles, analytics
+- Fully customizable branding (name, colors, fonts, logo)
+- Guest history and automatic duplicate merging
+- Optional Google Calendar sync for every reservation
 
-## Quick Start
+**Tech:** Next.js · PostgreSQL · Prisma · Tailwind · Vercel · Neon
 
-### 1. Fork & clone
+---
 
-Fork this repo on GitHub, then:
+## Who This Is For
 
+This is for restaurant owners who want full control over their reservation system — no monthly fees, no third-party platform. You'll need to be comfortable following technical instructions, or have someone set it up for you once.
+
+If you run into trouble at any step, see [Getting Help with AI](#getting-help-with-ai) — you can use a free AI assistant that will guide you through the entire setup interactively.
+
+---
+
+## What You'll Need
+
+Before starting, create free accounts at these services:
+
+| Service | What It's For | Sign Up |
+|---------|---------------|---------|
+| **GitHub** | Stores your code | [github.com](https://github.com) |
+| **Neon** | Hosts your database | [neon.tech](https://neon.tech) |
+| **Vercel** | Hosts your website | [vercel.com](https://vercel.com) |
+
+You'll also need **Node.js** installed on your computer (only needed once, for the initial database setup). Download it at [nodejs.org](https://nodejs.org) — choose the "LTS" version.
+
+**Optional:** A Google account if you want reservations to appear in Google Calendar.
+
+---
+
+## Setup Guide
+
+### Step 1 — Fork this repository
+
+"Forking" makes a personal copy of this project under your own GitHub account. You'll make all your changes there.
+
+1. Click **Fork** in the top-right corner of this GitHub page
+2. Choose your GitHub account as the destination
+3. Click **Create fork**
+
+You now have your own copy at `github.com/YOUR_USERNAME/reservations`.
+
+---
+
+### Step 2 — Create your database
+
+Your reservation data needs somewhere to live. Neon provides a free PostgreSQL database.
+
+1. Go to [neon.tech](https://neon.tech) and sign in
+2. Click **New Project**
+3. Give it a name (e.g., "my-restaurant") and click **Create project**
+4. On the project dashboard, find the **Connection string** — it looks like:
+   ```
+   postgresql://username:password@host.neon.tech/dbname?sslmode=require
+   ```
+5. Copy it — you'll need it in Step 4
+
+---
+
+### Step 3 — Deploy to Vercel
+
+Vercel hosts your website and makes it publicly accessible.
+
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
+2. Click **Add New > Project**
+3. Find your forked `reservations` repository and click **Import**
+4. **Before clicking Deploy**, click **Environment Variables** and add each of the following:
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `DATABASE_URL` | Your Neon connection string from Step 2 | |
+| `PORTAL_ACCESS_CODE` | A password you choose | This is how you log into the owner portal — pick something secure |
+| `JWT_SECRET` | A long random string | Use the generator below |
+| `ENCRYPTION_KEY` | A 64-character hex string | Use the generator below |
+
+**To generate `JWT_SECRET`:** Open Terminal (Mac) or Command Prompt (Windows) and run:
 ```bash
-git clone git@github.com:YOUR_USERNAME/reservations.git
-cd reservations
-npm install
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+Copy the output and use it as your `JWT_SECRET`.
+
+**To generate `ENCRYPTION_KEY`:** Run:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+Copy the 64-character output and use it as your `ENCRYPTION_KEY`.
+
+5. Click **Deploy**
+
+Vercel will build and deploy your site. This takes about a minute.
+
+---
+
+### Step 4 — Initialize your database
+
+After deployment, your database exists but is empty. You need to set it up once from your computer.
+
+1. Open Terminal (Mac) or Command Prompt (Windows)
+2. Clone your forked repo:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/reservations.git
+   cd reservations
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Create a `.env` file:
+   ```bash
+   cp .env.example .env
+   ```
+5. Open the `.env` file in any text editor (Notepad, TextEdit, VS Code) and fill in the same values you used in Vercel:
+   ```
+   DATABASE_URL="your-neon-connection-string"
+   PORTAL_ACCESS_CODE="your-chosen-password"
+   JWT_SECRET="your-generated-secret"
+   ENCRYPTION_KEY="your-generated-key"
+   ```
+6. Run the database migrations (creates all the tables):
+   ```bash
+   npx prisma migrate deploy
+   ```
+7. Seed the default settings:
+   ```bash
+   npx prisma db seed
+   ```
+
+Your database is now ready.
+
+---
+
+### Step 5 — Customize your restaurant defaults
+
+Before anything else, set your restaurant's basic operating hours and capacity in `prisma/seed.ts`. Open the file and edit the top section:
+
+```js
+const DEFAULT_OPERATING_HOURS = {
+  monday:    { open: true,  start: "11:00", end: "21:00" },
+  tuesday:   { open: true,  start: "11:00", end: "21:00" },
+  wednesday: { open: true,  start: "11:00", end: "21:00" },
+  thursday:  { open: true,  start: "11:00", end: "21:00" },
+  friday:    { open: true,  start: "11:00", end: "22:00" },
+  saturday:  { open: true,  start: "11:00", end: "22:00" },
+  sunday:    { open: false },
+};
 ```
 
-### 2. Configure environment
+Also update these values lower in the file:
+- `maxSeatingDuration: 90` — how long a party occupies a table (minutes)
+- `resetBuffer: 15` — turnover/cleaning time between seatings (minutes)
+- `maxTotalGuests: 20` — max simultaneous guests across all tables
+- `timezone: "America/New_York"` — your timezone ([list of valid values](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
 
+After editing, re-run the seed:
 ```bash
-cp .env.example .env
-```
-
-Fill in your values — see `.env.example` for documentation on each variable.
-
-### 3. Customize defaults
-
-Edit `prisma/seed.ts` to set your restaurant's:
-- Operating hours (days open, start/end times)
-- Seating duration and reset buffer
-- Max guest capacity
-- Timezone
-
-### 4. Set up the database
-
-```bash
-npx prisma migrate dev --name init
 npx prisma db seed
 ```
 
-### 5. Run the dev server
+---
 
-```bash
-npm run dev
-```
+### Step 6 — Configure your restaurant in the portal
 
-- Public booking page: `http://localhost:3000`
-- Owner portal: `http://localhost:3000/owner`
+Go to your Vercel deployment URL and log in at `/owner` with your `PORTAL_ACCESS_CODE`.
 
-### 6. Customize in the UI
+Navigate to **Settings** and configure:
 
-Once running, go to **Settings > Appearance** in the owner portal to set:
-- Restaurant name, hero heading, and subtext
-- Color palette and font pairing
-- Tab icon (emoji or image)
+- **Restaurant name** — appears on the booking page and confirmation
+- **Hero heading and subtext** — the text guests see when they land on your booking page
+- **Color palette** — choose from 5 preset themes
+- **Font pairing** — 4 options from classic serif to modern mono
+- **Logo** — upload an image or choose an emoji icon
+- **Operating hours** — fine-tune days and times (or reset to defaults)
+- **Booking window** — how many days ahead guests can book
 
 ---
 
-## Google Calendar Setup
+## Google Calendar Integration (Optional)
 
-The system uses Google OAuth 2.0 to create calendar events for each reservation.
+If you want a Google Calendar event created for every reservation:
 
 ### 1. Create a Google Cloud project
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project (or use an existing one)
-3. Enable the **Google Calendar API** under APIs & Services > Library
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. Click the project dropdown at the top → **New Project**
+3. Give it a name (e.g., "My Restaurant Reservations") and click **Create**
+4. Make sure your new project is selected in the dropdown
+5. Go to **APIs & Services > Library**
+6. Search for "Google Calendar API" and click **Enable**
 
-### 2. Configure the OAuth consent screen
+### 2. Configure the consent screen
 
-1. Go to APIs & Services > OAuth consent screen
-2. Choose **External** user type
-3. Fill in the app name, support email, and developer contact
-4. Add the scope: `https://www.googleapis.com/auth/calendar.events`
-5. Publish the app to **Production** status (click "Publish App") — this removes the 100-user cap and test-user requirement. Since the scope (`calendar.events`) is not sensitive/restricted, no Google verification is needed.
+1. Go to **APIs & Services > OAuth consent screen**
+2. Select **External** and click **Create**
+3. Fill in:
+   - App name: your restaurant name
+   - User support email: your email
+   - Developer contact: your email
+4. Click **Save and Continue**
+5. On the Scopes page, click **Add or Remove Scopes**
+6. Search for and add: `https://www.googleapis.com/auth/calendar.events`
+7. Click **Save and Continue** through the rest
+8. Back on the main OAuth screen, click **Publish App** → **Confirm**
+   > Publishing removes the 100-user test limit. The `calendar.events` scope doesn't require Google verification.
 
 ### 3. Create OAuth credentials
 
-1. Go to APIs & Services > Credentials
+1. Go to **APIs & Services > Credentials**
 2. Click **Create Credentials > OAuth client ID**
 3. Application type: **Web application**
 4. Add **Authorized JavaScript origins**:
-   - `http://localhost:3000` (development)
-   - `https://yourdomain.com` (production)
+   - `https://your-vercel-domain.vercel.app`
 5. Add **Authorized redirect URIs**:
-   - `http://localhost:3000/api/auth/google/callback` (development)
-   - `https://yourdomain.com/api/auth/google/callback` (production)
-6. Copy the Client ID and Client Secret into your `.env`
+   - `https://your-vercel-domain.vercel.app/api/auth/google/callback`
+6. Click **Create**
+7. Copy the **Client ID** and **Client Secret**
 
-### 4. Connect from the app
+### 4. Add credentials to Vercel
 
-1. Log into the owner portal at `/owner`
-2. Go to **Settings > Google Calendar**
-3. Click **Connect Google Calendar** and complete the OAuth flow
+In your Vercel project settings → Environment Variables, add:
+
+| Variable | Value |
+|----------|-------|
+| `GOOGLE_CLIENT_ID` | Your Client ID |
+| `GOOGLE_CLIENT_SECRET` | Your Client Secret |
+| `GOOGLE_REDIRECT_URI` | `https://your-vercel-domain.vercel.app/api/auth/google/callback` |
+
+Redeploy your Vercel project after adding these (Deployments → Redeploy).
+
+### 5. Connect from the app
+
+1. Log into the owner portal → **Settings**
+2. Scroll to **Google Calendar**
+3. Click **Connect Google Calendar** and complete the sign-in
 
 ---
 
-## Deployment
+## Running Locally (Optional)
 
-### Vercel + Neon
+If you want to test changes before deploying:
 
-1. Push the repo to GitHub
-2. Import into [Vercel](https://vercel.com)
-3. Set all environment variables in Vercel project settings
-4. Create a [Neon](https://neon.tech) Postgres database and set `DATABASE_URL`
-5. Update `GOOGLE_REDIRECT_URI` to your production callback URL
-6. Add your production domain to the Google OAuth authorized origins and redirect URIs
+```bash
+# Start the local development server
+npm run dev
+```
+
+- Booking page: [http://localhost:3000](http://localhost:3000)
+- Owner portal: [http://localhost:3000/owner](http://localhost:3000/owner)
 
 ---
 
-## Tech Stack
+## Getting Help with AI
 
-- **Framework:** Next.js 16 (App Router)
-- **Database:** PostgreSQL (Neon) + Prisma ORM
-- **Styling:** Tailwind CSS 4
-- **Auth:** Passcode + JWT
-- **Calendar:** Google Calendar API (OAuth 2.0)
-- **Hosting:** Vercel
+This repo includes a guided setup assistant you can use if you have [Claude Code](https://claude.ai/code) installed.
+
+**What is Claude Code?** It's a free AI assistant that runs in your terminal and can walk you through technical tasks step by step, answer questions in plain language, and even run commands for you.
+
+### Install Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Then sign in:
+```bash
+claude
+```
+
+### Use the Setup Wizard
+
+Once inside your project directory, type:
+
+```
+/setup
+```
+
+The assistant will check what's already configured, ask you questions about your restaurant, and guide you through every remaining step — including generating secrets, walking you through Neon and Vercel, and verifying your database is working.
+
+You can also just ask it questions in plain English:
+- *"I'm stuck on the database step, what do I do?"*
+- *"How do I find my Neon connection string?"*
+- *"My site deployed but I can't log in — what's wrong?"*
+
+---
+
+## Troubleshooting
+
+**"I can't log into the owner portal"**
+Double-check that `PORTAL_ACCESS_CODE` in your Vercel environment variables matches exactly what you're typing. It's case-sensitive.
+
+**"The database migration failed"**
+Make sure your `DATABASE_URL` in `.env` is the correct Neon connection string, including `?sslmode=require` at the end.
+
+**"The booking page shows no available times"**
+Log into the owner portal → Settings → check that your operating hours are configured and at least one day is set to open.
+
+**"Google Calendar connect fails"**
+Make sure `GOOGLE_REDIRECT_URI` in Vercel matches exactly the redirect URI you added in Google Cloud (including `https://`, your full domain, and `/api/auth/google/callback`).
+
+**"I changed settings in `seed.ts` but nothing changed"**
+You need to re-run `npx prisma db seed` after editing the file.
+
+---
+
+## Contributing
+
+Pull requests are welcome. For significant changes, open an issue first to discuss what you'd like to change.
+
+---
+
+## License
+
+MIT
