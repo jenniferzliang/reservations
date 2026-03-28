@@ -189,7 +189,7 @@ export default function SettingsPage() {
     setSaving(false);
     if (res.ok) {
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      window.location.reload();
     }
   }
 
@@ -854,13 +854,8 @@ export default function SettingsPage() {
           </div>
           <Toggle
             checked={settings.autoMergeDuplicates}
-            onChange={async (val) => {
+            onChange={(val) => {
               setSettings({ ...settings, autoMergeDuplicates: val });
-              await fetch("/api/settings", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ autoMergeDuplicates: val }),
-              });
             }}
           />
         </div>
