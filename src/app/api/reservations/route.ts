@@ -54,11 +54,15 @@ export async function POST(request: Request) {
     // Count guests whose stay overlaps the requested time
     const currentGuests = countOverlappingGuests(dayReservations, data.time, occupancyDuration);
 
+    // partySize 9 encodes "8+ guests" — we skip the capacity check for large
+    // parties since the actual headcount isn't known until they arrive.
     if (currentGuests + data.partySize > maxGuests && data.partySize < 9) {
       return { error: "This time slot is fully booked", status: 409 };
     }
 
-    // Upsert guest
+    // Find or create a guest record keyed by (firstName, lastName, phone).
+    // autoMerge controls whether repeat guests update their existing profile
+    // (preserving visit history) vs always creating a fresh one.
     const autoMerge = settings?.autoMergeDuplicates ?? true;
     let guest;
 

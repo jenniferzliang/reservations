@@ -131,7 +131,8 @@ export default function GuestsPage() {
 
   async function saveEdit() {
     if (!editGuest) return;
-    const [firstName, ...rest] = editForm.name.trim().split(/\s+/);
+    // filter(Boolean) drops empty tokens so "John  Doe" (extra spaces) works cleanly.
+    const [firstName, ...rest] = editForm.name.trim().split(/\s+/).filter(Boolean);
     const lastName = rest.join(" ") || editGuest.lastName;
     await fetch(`/api/guests/${editGuest.id}`, {
       method: "PATCH",

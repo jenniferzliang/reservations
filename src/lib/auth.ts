@@ -7,6 +7,8 @@ if (!jwtSecret && process.env.NODE_ENV === "production") {
 }
 const JWT_SECRET = new TextEncoder().encode(jwtSecret || "dev-secret-change-me");
 
+// Short prefix scopes the cookie to this app and avoids collisions if
+// multiple apps are served from the same domain in the future.
 const COOKIE_NAME = "nln-session";
 
 export async function verifyPasscode(input: string): Promise<boolean> {

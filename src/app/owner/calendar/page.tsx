@@ -50,6 +50,9 @@ const LEGEND_ITEMS = [
   { status: "NO_SHOW", label: "No Show" },
 ];
 
+// TODO: move these two helpers to src/lib/formatting.ts — nearly identical
+// versions also live in settings/page.tsx.
+
 function formatTime12(time24: string): string {
   const [h, m] = time24.split(":").map(Number);
   const ampm = h >= 12 ? "PM" : "AM";
@@ -57,6 +60,7 @@ function formatTime12(time24: string): string {
   return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
+// Adds minutes to an "HH:mm" string, returning the result as "H:mm".
 function addMinutes(time24: string, mins: number): string {
   const [h, m] = time24.split(":").map(Number);
   const totalMins = h * 60 + m + mins;
@@ -111,7 +115,8 @@ export default function CalendarPage() {
   for (let i = 0; i < days.length; i += 7) {
     allWeeks.push(days.slice(i, i + 7));
   }
-  // Drop trailing weeks that are entirely in the next month
+  // Drop trailing weeks that fall entirely outside the current month.
+  // e.g. if a month ends on Wednesday, the Thu–Sun overflow row is omitted.
   const weeks = allWeeks.filter((week) =>
     week.some((d) => isSameMonth(d, currentMonth))
   );
@@ -337,6 +342,7 @@ export default function CalendarPage() {
                       </span>
                     </div>
                     <div className="font-mono text-[11px] text-[#888888] flex items-center gap-2 mb-1 leading-none">
+                      {/* TODO: read maxSeatingDuration from settings instead of hard-coding 75 min */}
                       <span>
                         {formatTime12(r.time)} — {formatTime12(addMinutes(r.time, 75))}
                       </span>
