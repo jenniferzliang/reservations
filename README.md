@@ -73,7 +73,7 @@ The system uses Google OAuth 2.0 to create calendar events for each reservation.
 2. Choose **External** user type
 3. Fill in the app name, support email, and developer contact
 4. Add the scope: `https://www.googleapis.com/auth/calendar.events`
-5. Add the owner's Google account as a test user (required while in "Testing" status)
+5. Publish the app to **Production** status (click "Publish App") — this removes the 100-user cap and test-user requirement. Since the scope (`calendar.events`) is not sensitive/restricted, no Google verification is needed.
 
 ### 3. Create OAuth credentials
 
