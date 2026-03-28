@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULTS = {
-  restaurantName: process.env.NEXT_PUBLIC_SITE_NAME || "My Restaurant",
+  restaurantName: "My Restaurant",
   heroHeading: "Reserve Your\nTable.",
   heroSubtext: "Book your experience with us.",
   iconType: "emoji",

@@ -35,7 +35,7 @@ Edit `prisma/seed.ts` to set your restaurant's:
 ### 4. Set up the database
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma db push
 npx prisma db seed
 ```
 
