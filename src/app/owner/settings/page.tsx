@@ -6,6 +6,9 @@ import {
   Save,
   ChevronLeft,
   ChevronRight,
+  Coffee,
+  Croissant,
+  UtensilsCrossed,
 } from "lucide-react";
 import {
   PALETTES,
@@ -54,6 +57,7 @@ interface Settings {
   heroSubtext: string;
   iconType: string;
   iconValue: string;
+  navIcon: string;
 }
 
 const DAYS = [
@@ -117,6 +121,7 @@ export default function SettingsPage() {
         heroSubtext: data.heroSubtext ?? "Book your experience with us.",
         iconType: data.iconType ?? "emoji",
         iconValue: data.iconValue ?? "",
+        navIcon: data.navIcon ?? "utensils",
         colorPalette: data.colorPalette ?? "classic",
         fontPairing: data.fontPairing ?? "serif-mono",
       }))
@@ -166,6 +171,7 @@ export default function SettingsPage() {
       heroSubtext: settings.heroSubtext,
       iconType: settings.iconType,
       iconValue: settings.iconValue,
+      navIcon: settings.navIcon,
     };
     if (settings.googleCalendarId) {
       payload.googleCalendarId = settings.googleCalendarId;
@@ -314,98 +320,78 @@ export default function SettingsPage() {
                 <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
                   Tab Icon
                 </label>
-                <div className="flex gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSettings({ ...settings, iconType: "emoji", iconValue: "" })
-                    }
-                    className={`font-mono text-[10px] uppercase tracking-[1px] px-3 py-1.5 border rounded-none cursor-pointer ${
-                      settings.iconType === "emoji"
-                        ? "border-[#0D0D0D] bg-[#0D0D0D] text-white"
-                        : "border-[#E0E0E0] hover:border-[#888888]"
-                    }`}
-                  >
-                    Emoji
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSettings({ ...settings, iconType: "image", iconValue: "" })
-                    }
-                    className={`font-mono text-[10px] uppercase tracking-[1px] px-3 py-1.5 border rounded-none cursor-pointer ${
-                      settings.iconType === "image"
-                        ? "border-[#0D0D0D] bg-[#0D0D0D] text-white"
-                        : "border-[#E0E0E0] hover:border-[#888888]"
-                    }`}
-                  >
-                    Image
-                  </button>
+                <p className="font-mono text-[10px] text-[#888888] mb-2">
+                  Upload a custom image, or the nav icon will be used.
+                </p>
+                <div className="flex items-center gap-2">
+                  <label className="inline-block border border-[#E0E0E0] rounded-none px-3 py-2 font-mono text-[10px] uppercase tracking-[1px] cursor-pointer hover:border-[#888888]">
+                    {settings.iconValue ? "Replace Image" : "Upload Image"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 256 * 1024) {
+                          alert("Image must be under 256KB");
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setSettings({
+                            ...settings,
+                            iconType: "image",
+                            iconValue: reader.result as string,
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                  {settings.iconValue && (
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, iconType: "image", iconValue: "" })}
+                      className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888] hover:text-[#0D0D0D] cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
-                {settings.iconType === "emoji" ? (
-                  <input
-                    type="text"
-                    value={settings.iconValue}
-                    onChange={(e) =>
-                      setSettings({ ...settings, iconValue: e.target.value })
-                    }
-                    placeholder="Paste an emoji"
-                    className="w-full border border-[#E0E0E0] rounded-none px-3 py-2 font-mono text-sm"
-                  />
-                ) : (
-                  <div>
-                    <label className="inline-block border border-[#E0E0E0] rounded-none px-3 py-2 font-mono text-[10px] uppercase tracking-[1px] cursor-pointer hover:border-[#888888]">
-                      {settings.iconValue ? "Replace Image" : "Upload Image"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          if (file.size > 256 * 1024) {
-                            alert("Image must be under 256KB");
-                            return;
-                          }
-                          const reader = new FileReader();
-                          reader.onload = () => {
-                            setSettings({
-                              ...settings,
-                              iconType: "image",
-                              iconValue: reader.result as string,
-                            });
-                          };
-                          reader.readAsDataURL(file);
-                        }}
-                      />
-                    </label>
-                    {settings.iconValue && (
-                      <button
-                        type="button"
-                        onClick={() => setSettings({ ...settings, iconValue: "" })}
-                        className="ml-2 font-mono text-[10px] uppercase tracking-[1px] text-[#888888] hover:text-[#0D0D0D] cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                )}
                 {settings.iconValue && (
                   <div className="mt-2 flex items-center gap-2">
                     <span className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888]">
                       Preview:
                     </span>
-                    {settings.iconType === "emoji" ? (
-                      <span className="text-2xl">{settings.iconValue}</span>
-                    ) : (
-                      <img
-                        src={settings.iconValue}
-                        alt="Icon preview"
-                        className="w-8 h-8 object-contain"
-                      />
-                    )}
+                    <img
+                      src={settings.iconValue}
+                      alt="Icon preview"
+                      className="w-8 h-8 object-contain"
+                    />
                   </div>
                 )}
+              </div>
+              <div>
+                <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
+                  Nav Icon
+                </label>
+                <div className="flex gap-2">
+                  {([["coffee", Coffee], ["croissant", Croissant], ["utensils", UtensilsCrossed]] as const).map(([id, Icon]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSettings({ ...settings, navIcon: id })}
+                      className={`flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[1px] px-3 py-1.5 border rounded-none cursor-pointer ${
+                        settings.navIcon === id
+                          ? "border-[#0D0D0D] bg-[#0D0D0D] text-white"
+                          : "border-[#E0E0E0] hover:border-[#888888]"
+                      }`}
+                    >
+                      <Icon size={14} strokeWidth={1.5} /> {id}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="font-mono text-xs font-bold uppercase tracking-[1px] block mb-2">
@@ -627,7 +613,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <input
                       type="time"
-                      value={config.start || "11:00"}
+                      value={config.start || "07:00"}
                       onChange={(e) =>
                         updateDay(day, "start", e.target.value)
                       }
@@ -638,7 +624,7 @@ export default function SettingsPage() {
                     </span>
                     <input
                       type="time"
-                      value={config.end || "21:00"}
+                      value={config.end || "10:15"}
                       onChange={(e) => updateDay(day, "end", e.target.value)}
                       className="font-mono text-sm border border-[#E0E0E0] rounded-none px-3 py-2 w-full sm:w-36"
                     />

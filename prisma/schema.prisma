@@ -86,4 +86,5 @@ model Settings {
   heroSubtext         String  @default("Book your experience with us.")
   iconType            String  @default("emoji")
   iconValue           String  @default("")
+  navIcon             String  @default("utensils")
 }

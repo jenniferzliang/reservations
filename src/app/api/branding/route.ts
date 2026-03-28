@@ -7,6 +7,7 @@ const DEFAULTS = {
   heroSubtext: "Book your experience with us.",
   iconType: "emoji",
   iconValue: "",
+  navIcon: "utensils",
 };
 
 export async function GET() {
@@ -18,6 +19,7 @@ export async function GET() {
         heroSubtext: true,
         iconType: true,
         iconValue: true,
+        navIcon: true,
       },
     });
 

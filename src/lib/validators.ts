@@ -51,6 +51,7 @@ export const UpdateSettingsSchema = z.object({
   heroSubtext: z.string().max(300).optional(),
   iconType: z.enum(["emoji", "image"]).optional(),
   iconValue: z.string().max(500000).optional(),
+  navIcon: z.enum(["coffee", "croissant", "utensils"]).optional(),
 });
 
 export const AuthSchema = z.object({
