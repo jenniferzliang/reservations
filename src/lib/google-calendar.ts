@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { prisma } from "./prisma";
+import { encrypt, decrypt } from "./encryption";
 
 function getOAuth2Client() {
   return new google.auth.OAuth2(
@@ -38,8 +39,8 @@ export async function handleCallback(code: string) {
   await prisma.settings.update({
     where: { id: "default" },
     data: {
-      googleAccessToken: tokens.access_token,
-      googleRefreshToken: tokens.refresh_token,
+      googleAccessToken: tokens.access_token ? encrypt(tokens.access_token) : null,
+      googleRefreshToken: tokens.refresh_token ? encrypt(tokens.refresh_token) : null,
       googleAccountEmail: email,
     },
   });
@@ -55,15 +56,15 @@ async function getAuthenticatedClient() {
 
   const client = getOAuth2Client();
   client.setCredentials({
-    access_token: settings.googleAccessToken,
-    refresh_token: settings.googleRefreshToken,
+    access_token: decrypt(settings.googleAccessToken),
+    refresh_token: decrypt(settings.googleRefreshToken),
   });
 
   client.on("tokens", async (tokens) => {
     if (tokens.access_token) {
       await prisma.settings.update({
         where: { id: "default" },
-        data: { googleAccessToken: tokens.access_token },
+        data: { googleAccessToken: encrypt(tokens.access_token) },
       });
     }
   });
