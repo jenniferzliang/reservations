@@ -9,6 +9,7 @@ import {
   Coffee,
   Croissant,
   UtensilsCrossed,
+  X,
 } from "lucide-react";
 import {
   PALETTES,
@@ -110,6 +111,7 @@ export default function SettingsPage() {
   const savedSettingsRef = useRef<string>("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
 
   const isDirty = useCallback(() => {
     if (!settings || !savedSettingsRef.current) return false;
@@ -214,6 +216,30 @@ export default function SettingsPage() {
     }
   }
 
+  function handleReset() {
+    if (!settings) return;
+    setSettings({
+      ...settings,
+      operatingHours: {
+        monday: { open: true, start: "11:00", end: "21:00" },
+        tuesday: { open: true, start: "11:00", end: "21:00" },
+        wednesday: { open: true, start: "11:00", end: "21:00" },
+        thursday: { open: true, start: "11:00", end: "21:00" },
+        friday: { open: true, start: "11:00", end: "22:00" },
+        saturday: { open: true, start: "11:00", end: "22:00" },
+        sunday: { open: false, start: "11:00", end: "21:00" },
+      },
+      maxSeatingDuration: 90,
+      resetBuffer: 15,
+      slotInterval: 15,
+      bookingWindowDays: 30,
+      maxTotalGuests: 20,
+      colorPalette: "classic",
+      fontPairing: "serif-mono",
+    });
+    setShowResetDialog(false);
+  }
+
   function updateDay(day: string, field: string, value: boolean | string) {
     if (!settings) return;
     setSettings({
@@ -282,6 +308,13 @@ export default function SettingsPage() {
               Saved
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => setShowResetDialog(true)}
+            className="font-mono text-[11px] uppercase tracking-[2px] border border-[#E0E0E0] bg-white text-[#0D0D0D] px-4 py-2.5 rounded-none cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+          >
+            Reset
+          </button>
           <Button
             className="!w-auto !px-5 flex items-center gap-2"
             onClick={handleSave}
@@ -909,6 +942,51 @@ export default function SettingsPage() {
         )}
       </section>
         </>
+      )}
+
+      {/* Reset to Defaults Confirmation Dialog */}
+      {showResetDialog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setShowResetDialog(false)}
+        >
+          <div className="absolute inset-0 bg-black/20" />
+          <div
+            className="relative bg-white border border-[#E0E0E0] rounded-none shadow-lg max-w-[420px] w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 pb-4">
+              <h3 className="font-mono text-sm font-bold uppercase tracking-[2px]">
+                Reset to Defaults
+              </h3>
+              <button
+                onClick={() => setShowResetDialog(false)}
+                className="cursor-pointer hover:opacity-60"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="px-6 pb-6">
+              <p className="font-serif text-sm mb-5">
+                Reset all settings to defaults? Your current configuration will be lost.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowResetDialog(false)}
+                  className="flex-1 font-mono text-[11px] uppercase tracking-[2px] border border-[#E0E0E0] bg-white text-[#0D0D0D] px-5 py-3 rounded-none cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="flex-1 font-mono text-[11px] uppercase tracking-[2px] bg-[#C45C4A] text-white border-none px-5 py-3 rounded-none cursor-pointer hover:bg-[#b04f3f] transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
