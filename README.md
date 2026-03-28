@@ -96,7 +96,7 @@ Copy the 64-character output and use it as your `ENCRYPTION_KEY`.
 
 5. Click **Deploy**
 
-Vercel will build and deploy your site. This takes about a minute.
+Vercel will build and deploy your site. This takes about a minute. The app won't be fully functional until you complete Step 4 (database setup).
 
 ---
 
@@ -138,36 +138,7 @@ Your database is now ready.
 
 ---
 
-### Step 5 — Customize your restaurant defaults
-
-Before anything else, set your restaurant's basic operating hours and capacity in `prisma/seed.ts`. Open the file and edit the top section:
-
-```js
-const DEFAULT_OPERATING_HOURS = {
-  monday:    { open: true,  start: "11:00", end: "21:00" },
-  tuesday:   { open: true,  start: "11:00", end: "21:00" },
-  wednesday: { open: true,  start: "11:00", end: "21:00" },
-  thursday:  { open: true,  start: "11:00", end: "21:00" },
-  friday:    { open: true,  start: "11:00", end: "22:00" },
-  saturday:  { open: true,  start: "11:00", end: "22:00" },
-  sunday:    { open: false },
-};
-```
-
-Also update these values lower in the file:
-- `maxSeatingDuration: 90` — how long a party occupies a table (minutes)
-- `resetBuffer: 15` — turnover/cleaning time between seatings (minutes)
-- `maxTotalGuests: 20` — max simultaneous guests across all tables
-- `timezone: "America/New_York"` — your timezone ([list of valid values](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
-
-After editing, re-run the seed:
-```bash
-npx prisma db seed
-```
-
----
-
-### Step 6 — Configure your restaurant in the portal
+### Step 5 — Configure your restaurant in the portal
 
 Go to your Vercel deployment URL and log in at `/owner` with your `PORTAL_ACCESS_CODE`.
 
@@ -245,10 +216,9 @@ Redeploy your Vercel project after adding these (Deployments → Redeploy).
 
 ## Running Locally (Optional)
 
-If you want to test changes before deploying:
+If you want to test changes before deploying, make sure you've completed Step 4 (your `.env` file should already be set up with your database and secrets), then run:
 
 ```bash
-# Start the local development server
 npm run dev
 ```
 
