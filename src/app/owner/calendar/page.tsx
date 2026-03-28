@@ -155,6 +155,14 @@ export default function CalendarPage() {
           >
             <ChevronRight size={16} strokeWidth={1.5} />
           </button>
+          {!isSameMonth(currentMonth, new Date()) && (
+            <button
+              onClick={() => setCurrentMonth(new Date())}
+              className="font-mono text-[11px] uppercase tracking-[1px] cursor-pointer border border-[#E0E0E0] rounded-none px-3 py-2 hover:bg-[#F5F5F5] transition-colors"
+            >
+              Today
+            </button>
+          )}
         </div>
       </div>
 
