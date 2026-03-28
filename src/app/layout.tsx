@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
-import { prisma } from "@/lib/prisma";
+import { getCachedSettings } from "@/lib/prisma";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -11,9 +11,7 @@ const playfair = Playfair_Display({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await prisma.settings.findFirst({
-    select: { restaurantName: true, siteName: true },
-  });
+  const settings = await getCachedSettings();
   const name = settings?.siteName || settings?.restaurantName || "Restaurant Reservations";
   return {
     title: name,

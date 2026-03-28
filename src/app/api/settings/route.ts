@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, invalidateSettingsCache } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { UpdateSettingsSchema } from "@/lib/validators";
 import type { Prisma } from "@/generated/prisma/client";
@@ -73,6 +73,8 @@ export async function PATCH(request: Request) {
       }),
     },
   });
+
+  invalidateSettingsCache();
 
   const { googleAccessToken, googleRefreshToken, ...safe } = settings;
   return NextResponse.json({

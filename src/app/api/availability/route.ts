@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { format, addDays } from "date-fns";
 import { getAvailability } from "@/lib/availability";
-import { prisma } from "@/lib/prisma";
+import { getCachedSettings } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const settings = await prisma.settings.findFirst();
+  const settings = await getCachedSettings();
   const windowDays = settings?.bookingWindowDays || 30;
   const today = format(new Date(), "yyyy-MM-dd");
   const from = searchParams.get("from") || today;

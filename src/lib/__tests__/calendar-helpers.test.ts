@@ -9,6 +9,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     settings: { findFirst: mockSettingsFindFirst },
   },
+  getCachedSettings: mockSettingsFindFirst,
 }));
 
 vi.mock("@/lib/google-calendar", () => ({

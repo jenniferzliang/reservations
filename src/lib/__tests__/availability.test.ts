@@ -12,6 +12,7 @@ vi.mock("@/lib/prisma", () => ({
     blockedDate: { findMany: mockBlockedDates },
     reservation: { findMany: mockReservations },
   },
+  getCachedSettings: mockSettings,
 }));
 
 import { getAvailability } from "../availability";

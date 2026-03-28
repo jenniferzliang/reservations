@@ -1,5 +1,5 @@
 import { addMinutes, parse, format } from "date-fns";
-import { prisma } from "./prisma";
+import { getCachedSettings } from "./prisma";
 import { createEvent } from "./google-calendar";
 
 interface ReservationForCalendar {
@@ -24,7 +24,7 @@ export async function createCalendarEvent(
   guest: GuestForCalendar
 ): Promise<string | null> {
   try {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getCachedSettings();
     if (!settings) return null;
 
     const isReturning = guest.visitCount > 1;

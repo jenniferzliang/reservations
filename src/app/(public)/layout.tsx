@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getCachedSettings } from "@/lib/prisma";
 import {
   generateThemeStyles,
   FONT_PAIRINGS,
@@ -13,7 +13,7 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await prisma.settings.findFirst();
+  const settings = await getCachedSettings();
   const paletteId = (settings?.colorPalette ?? "classic") as PaletteId;
   const fontPairingId = (settings?.fontPairing ?? "serif-mono") as FontPairingId;
 

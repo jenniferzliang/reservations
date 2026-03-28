@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { prisma, getCachedSettings } from "./prisma";
 import { format, addDays, parse, addMinutes } from "date-fns";
 
 /**
@@ -56,7 +56,7 @@ export async function getAvailability(
   from: string,
   to: string
 ): Promise<DayAvailability[]> {
-  const settings = await prisma.settings.findFirst();
+  const settings = await getCachedSettings();
   if (!settings) throw new Error("Settings not configured");
 
   const operatingHours = settings.operatingHours as unknown as Record<string, DayConfig>;

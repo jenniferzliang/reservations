@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getCachedSettings } from "@/lib/prisma";
 
 const DEFAULTS = {
   restaurantName: "My Restaurant",
@@ -12,18 +12,11 @@ const DEFAULTS = {
 
 export async function GET() {
   try {
-    const settings = await prisma.settings.findFirst({
-      select: {
-        restaurantName: true,
-        heroHeading: true,
-        heroSubtext: true,
-        iconType: true,
-        iconValue: true,
-        navIcon: true,
-      },
-    });
+    const settings = await getCachedSettings();
+    if (!settings) return NextResponse.json(DEFAULTS);
 
-    return NextResponse.json(settings ?? DEFAULTS);
+    const { restaurantName, heroHeading, heroSubtext, iconType, iconValue, navIcon } = settings;
+    return NextResponse.json({ restaurantName, heroHeading, heroSubtext, iconType, iconValue, navIcon });
   } catch {
     return NextResponse.json(DEFAULTS);
   }
