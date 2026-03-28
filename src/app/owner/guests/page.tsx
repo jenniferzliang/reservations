@@ -63,10 +63,11 @@ export default function GuestsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [editGuest, setEditGuest] = useState<Guest | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", allergies: "", usualOrder: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", instagram: "", allergies: "", usualOrder: "" });
   const [mergeGuest, setMergeGuest] = useState<Guest | null>(null);
   const [mergeTargetId, setMergeTargetId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
+  const [deleteGuestTarget, setDeleteGuestTarget] = useState<Guest | null>(null);
   const [bookingTab, setBookingTab] = useState<BookingTab>("upcoming");
   const [dateFilter, setDateFilter] = useState(format(new Date(), "yyyy-MM-dd"));
   const [overviewSort, setOverviewSort] = useState<"most" | "recent" | "oldest">("most");
@@ -122,6 +123,7 @@ export default function GuestsPage() {
     setEditForm({
       name: `${g.firstName} ${g.lastName}`,
       phone: g.phone,
+      instagram: g.instagram || "",
       allergies: g.allergies || "",
       usualOrder: g.usualOrder || "",
     });
@@ -138,6 +140,7 @@ export default function GuestsPage() {
         firstName,
         lastName,
         phone: editForm.phone,
+        instagram: editForm.instagram || null,
         allergies: editForm.allergies || null,
         usualOrder: editForm.usualOrder || null,
       }),
@@ -589,7 +592,7 @@ export default function GuestsPage() {
                     <GitMerge size={15} strokeWidth={1.5} />
                   </button>
                   <button
-                    onClick={() => deleteGuest(g.id)}
+                    onClick={() => setDeleteGuestTarget(g)}
                     className="text-[#888888] hover:text-[#C45C4A] cursor-pointer"
                     title="Delete guest"
                   >
@@ -644,6 +647,18 @@ export default function GuestsPage() {
                   type="tel"
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                  Instagram
+                </label>
+                <input
+                  type="text"
+                  value={editForm.instagram}
+                  onChange={(e) => setEditForm({ ...editForm, instagram: e.target.value })}
+                  placeholder="@handle"
                   className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
                 />
               </div>
@@ -718,6 +733,54 @@ export default function GuestsPage() {
                   onClick={() => {
                     deleteReservation(deleteTarget.id);
                     setDeleteTarget(null);
+                  }}
+                  className="flex-1 font-mono text-[11px] uppercase tracking-[2px] bg-[#C45C4A] text-white border-none px-5 py-3 rounded-none cursor-pointer hover:bg-[#b04f3f] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Guest Confirmation Dialog */}
+      {deleteGuestTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setDeleteGuestTarget(null)}
+        >
+          <div className="absolute inset-0 bg-black/20" />
+          <div
+            className="relative bg-white border border-[#E0E0E0] rounded-none shadow-lg max-w-[400px] w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 pb-4">
+              <h3 className="font-mono text-sm font-bold uppercase tracking-[2px]">
+                Delete Guest
+              </h3>
+              <button
+                onClick={() => setDeleteGuestTarget(null)}
+                className="cursor-pointer hover:opacity-60"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="px-6 pb-6">
+              <p className="font-serif text-sm mb-3">
+                This will permanently remove <strong>{deleteGuestTarget.firstName} {deleteGuestTarget.lastName}</strong> and all their visit history. This cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDeleteGuestTarget(null)}
+                  className="flex-1 font-mono text-[11px] uppercase tracking-[2px] border border-[#E0E0E0] bg-white text-[#0D0D0D] px-5 py-3 rounded-none cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    deleteGuest(deleteGuestTarget.id);
+                    setDeleteGuestTarget(null);
                   }}
                   className="flex-1 font-mono text-[11px] uppercase tracking-[2px] bg-[#C45C4A] text-white border-none px-5 py-3 rounded-none cursor-pointer hover:bg-[#b04f3f] transition-colors"
                 >
