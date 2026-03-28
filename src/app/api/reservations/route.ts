@@ -4,10 +4,15 @@ import { requireAuth } from "@/lib/auth";
 import { normalizePhone } from "@/lib/phone";
 import { CreateReservationSchema } from "@/lib/validators";
 import { createCalendarEvent } from "@/lib/calendar-helpers";
-import { parse, addMinutes } from "date-fns";
+import { countOverlappingGuests } from "@/lib/availability";
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const parsed = CreateReservationSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
@@ -31,8 +36,11 @@ export async function POST(request: Request) {
     phone = `walkin-${crypto.randomUUID()}`;
   }
 
-  // Check capacity in a transaction
+  // Check capacity in a transaction with a row-level lock to prevent double-booking
   const result = await prisma.$transaction(async (tx) => {
+    // Lock the settings row to serialize concurrent booking attempts
+    await tx.$queryRaw`SELECT id FROM "Settings" WHERE id = 'default' FOR UPDATE`;
+
     const settings = await tx.settings.findFirst();
     const maxGuests = settings?.maxTotalGuests || 8;
     const occupancyDuration = (settings?.maxSeatingDuration || 75) + (settings?.resetBuffer || 15);
@@ -44,15 +52,7 @@ export async function POST(request: Request) {
     });
 
     // Count guests whose stay overlaps the requested time
-    const slotTime = parse(data.time, "HH:mm", new Date());
-    let currentGuests = 0;
-    for (const res of dayReservations) {
-      const resStart = parse(res.time, "HH:mm", new Date());
-      const resEnd = addMinutes(resStart, occupancyDuration);
-      if (slotTime >= resStart && slotTime < resEnd) {
-        currentGuests += res.partySize;
-      }
-    }
+    const currentGuests = countOverlappingGuests(dayReservations, data.time, occupancyDuration);
 
     if (currentGuests + data.partySize > maxGuests && data.partySize < 9) {
       return { error: "This time slot is fully booked", status: 409 };

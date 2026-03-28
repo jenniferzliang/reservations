@@ -40,7 +40,12 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const parsed = UpdateReservationSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

@@ -1,6 +1,27 @@
 import { prisma } from "./prisma";
 import { format, addDays, parse, addMinutes } from "date-fns";
 
+/**
+ * Count the total number of guests from reservations that overlap a given time slot.
+ * A reservation overlaps if: resStart <= slotTime < resStart + occupancyDuration
+ */
+export function countOverlappingGuests(
+  reservations: { time: string; partySize: number }[],
+  slotTime: string,
+  occupancyDuration: number
+): number {
+  const slot = parse(slotTime, "HH:mm", new Date());
+  let total = 0;
+  for (const res of reservations) {
+    const resStart = parse(res.time, "HH:mm", new Date());
+    const resEnd = addMinutes(resStart, occupancyDuration);
+    if (slot >= resStart && slot < resEnd) {
+      total += res.partySize;
+    }
+  }
+  return total;
+}
+
 const DAY_NAMES = [
   "sunday",
   "monday",
@@ -91,16 +112,7 @@ export async function getAvailability(
       while (slotTime < dayEnd) {
         const timeStr = format(slotTime, "HH:mm");
 
-        // Count guests from all reservations that overlap this slot
-        // A reservation overlaps if: resStart <= slotTime < resStart + occupancyDuration
-        let currentGuests = 0;
-        for (const res of dayReservations) {
-          const resStart = parse(res.time, "HH:mm", current);
-          const resEnd = addMinutes(resStart, occupancyDuration);
-          if (slotTime >= resStart && slotTime < resEnd) {
-            currentGuests += res.partySize;
-          }
-        }
+        const currentGuests = countOverlappingGuests(dayReservations, timeStr, occupancyDuration);
 
         slots.push({
           time: timeStr,

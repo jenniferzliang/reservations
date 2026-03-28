@@ -63,6 +63,7 @@ function setupSuccessfulTransaction(overrides: {
     : [];
 
   const mockTx = {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     reservation: {
       findMany: vi.fn().mockResolvedValue(existingReservations),
       create: vi.fn().mockResolvedValue({
