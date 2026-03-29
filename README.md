@@ -2,6 +2,8 @@
 
 A complete, self-hosted reservation system you can fork and make your own. Guests book through a clean public page; you manage everything from a private owner portal.
 
+**Live demo:** [bookatable.vercel.app](https://bookatable.vercel.app)
+
 **What's included:**
 - Public booking page with real-time availability
 - Owner portal: dashboard, calendar, guest profiles, analytics
@@ -252,7 +254,9 @@ Once inside your project directory, type:
 /setup
 ```
 
-The assistant will check what's already configured, ask you questions about your restaurant, and guide you through every remaining step — including generating secrets, walking you through Neon and Vercel, and verifying your database is working.
+This launches an interactive walkthrough that guides you through the entire setup process — from creating your database to deploying your site. It checks what's already configured, asks you questions about your restaurant, and handles each remaining step for you (generating secrets, setting up Neon and Vercel, seeding the database, and more).
+
+If you prefer to set things up manually, follow the [Setup Guide](#setup-guide) above. But if you want a guided experience, `/setup` is the easiest way to get started.
 
 You can also just ask it questions in plain English:
 - *"I'm stuck on the database step, what do I do?"*

@@ -24,7 +24,7 @@ async function main() {
       operatingHours: DEFAULT_OPERATING_HOURS,
       maxSeatingDuration: 90,
       resetBuffer: 15,
-      maxTotalGuests: 20,
+      maxTotalGuests: 10,
       autoMergeDuplicates: true,
       timezone: "America/New_York",  // Change to your timezone
     },
