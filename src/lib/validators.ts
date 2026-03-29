@@ -15,6 +15,8 @@ export const CreateReservationSchema = z.object({
 
 export const UpdateReservationSchema = z.object({
   status: z.enum(["CONFIRMED", "ARRIVED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").optional(),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format").optional(),
   partySize: z.number().int().min(1).max(9).optional(),
   specialNotes: z.string().optional(),
 });

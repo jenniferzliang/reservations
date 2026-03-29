@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   format,
   startOfMonth,
@@ -15,7 +16,7 @@ import {
   isSameDay,
   parse,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Users, X, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, X, AlertTriangle, Pencil } from "lucide-react";
 import { formatTime12, addMinutesToTime } from "@/lib/formatting";
 
 interface Reservation {
@@ -297,12 +298,20 @@ export default function CalendarPage() {
               <h3 className="font-mono text-sm font-bold uppercase tracking-[2px]">
                 {format(selectedDate, "EEEE, MMMM d, yyyy")}
               </h3>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="cursor-pointer hover:opacity-60 border border-[#E0E0E0] rounded-full p-1"
-              >
-                <X size={16} strokeWidth={1.5} />
-              </button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/owner/guests?tab=bookings&date=${selectedDateStr}`}
+                  className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[1px] border border-[#E0E0E0] rounded-none px-3 py-1.5 text-[#0D0D0D] no-underline hover:bg-[#F5F5F5] transition-colors"
+                >
+                  <Pencil size={12} strokeWidth={1.5} /> Edit
+                </Link>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="cursor-pointer hover:opacity-60 border border-[#E0E0E0] rounded-full p-1"
+                >
+                  <X size={16} strokeWidth={1.5} />
+                </button>
+              </div>
             </div>
 
             {/* Reservations List */}

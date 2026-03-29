@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { format, parse, addDays } from "date-fns";
 import { Button } from "@/components/ui/Button";
-import { Phone, Trash2, Calendar, Clock, Users, TriangleAlert, X, GitMerge } from "lucide-react";
+import { SelectionCard } from "@/components/ui/SelectionCard";
+import { Phone, Trash2, Calendar, Clock, Users, TriangleAlert, X, GitMerge, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import type { DayAvailability } from "@/lib/availability";
 
 interface Guest {
   id: string;
@@ -56,7 +59,11 @@ function InstagramIcon({ size = 12 }: { size?: number }) {
 }
 
 export default function GuestsPage() {
-  const [tab, setTab] = useState<Tab>("overview");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "bookings" ? "bookings" as Tab : "overview" as Tab;
+  const initialDate = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
+
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -68,8 +75,12 @@ export default function GuestsPage() {
   const [mergeTargetId, setMergeTargetId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
   const [deleteGuestTarget, setDeleteGuestTarget] = useState<Guest | null>(null);
-  const [bookingTab, setBookingTab] = useState<BookingTab>("upcoming");
-  const [dateFilter, setDateFilter] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [bookingTab, setBookingTab] = useState<BookingTab>(initialTab === "bookings" ? "all" : "upcoming");
+  const [dateFilter, setDateFilter] = useState(initialDate);
+  const [editReservation, setEditReservation] = useState<Reservation | null>(null);
+  const [editResForm, setEditResForm] = useState({ date: "", time: "", partySize: 1, specialNotes: "" });
+  const [editAvailability, setEditAvailability] = useState<DayAvailability[]>([]);
+  const [editWeekOffset, setEditWeekOffset] = useState(0);
   const [overviewSort, setOverviewSort] = useState<"most" | "recent" | "oldest">("most");
   const [overviewSearch, setOverviewSearch] = useState("");
 
@@ -106,6 +117,36 @@ export default function GuestsPage() {
       setReservations(previous);
       alert("Failed to update status. Please try again.");
     }
+  }
+
+  const openEditReservation = useCallback((r: Reservation) => {
+    setEditReservation(r);
+    setEditResForm({ date: r.date, time: r.time, partySize: r.partySize, specialNotes: r.specialNotes || "" });
+    fetch("/api/availability")
+      .then((res) => res.ok ? res.json() : [])
+      .then((data: DayAvailability[]) => {
+        setEditAvailability(data);
+        // Set week offset so the reservation's current date is visible
+        const today = format(new Date(), "yyyy-MM-dd");
+        const daysDiff = Math.floor((new Date(r.date).getTime() - new Date(today).getTime()) / (1000 * 60 * 60 * 24));
+        setEditWeekOffset(Math.max(0, Math.floor(daysDiff / 7)));
+      })
+      .catch(() => setEditAvailability([]));
+  }, []);
+
+  async function saveEditReservation() {
+    if (!editReservation) return;
+    const res = await fetch(`/api/reservations/${editReservation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editResForm),
+    });
+    if (res.ok) {
+      setReservations((prev) =>
+        prev.map((r) => r.id === editReservation.id ? { ...r, ...editResForm } : r)
+      );
+    }
+    setEditReservation(null);
   }
 
   async function deleteReservation(id: string) {
@@ -480,6 +521,13 @@ export default function GuestsPage() {
                       <option value="CANCELLED">Cancelled</option>
                     </select>
                     <button
+                      onClick={() => openEditReservation(r)}
+                      className="text-[#888888] hover:text-[#0D0D0D] cursor-pointer"
+                      title="Edit"
+                    >
+                      <Pencil size={14} strokeWidth={1.5} />
+                    </button>
+                    <button
                       onClick={() => setDeleteTarget(r)}
                       className="text-[#888888] hover:text-[#C45C4A] cursor-pointer"
                     >
@@ -688,6 +736,181 @@ export default function GuestsPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Reservation Modal */}
+      {editReservation && (() => {
+        const maxEditWeekOffset = editAvailability.length > 0 ? Math.max(0, Math.ceil(editAvailability.length / 7) - 1) : 0;
+        const availabilityByDate = new Map(editAvailability.map((a) => [a.date, a]));
+        const today = new Date();
+        const startDay = editWeekOffset * 7;
+        const editWeekDays: DayAvailability[] = [];
+        for (let i = startDay; i < startDay + 7; i++) {
+          const d = addDays(today, i);
+          const dateStr = format(d, "yyyy-MM-dd");
+          const existing = availabilityByDate.get(dateStr);
+          if (existing) {
+            editWeekDays.push(existing);
+          } else if (i < editAvailability.length) {
+            editWeekDays.push({ date: dateStr, dayOfWeek: format(d, "EEEE"), isOpen: false, slots: [] });
+          }
+        }
+        const selectedDaySlots = editAvailability.find((d) => d.date === editResForm.date)?.slots || [];
+
+        return (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setEditReservation(null)}
+        >
+          <div className="absolute inset-0 bg-black/20" />
+          <div
+            className="relative bg-white border border-[#E0E0E0] rounded-none shadow-lg max-w-[560px] w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 pb-4">
+              <h3 className="font-mono text-sm font-bold uppercase tracking-[2px]">
+                Edit Reservation
+              </h3>
+              <button
+                onClick={() => setEditReservation(null)}
+                className="cursor-pointer hover:opacity-60"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="px-6 pb-6">
+              <p className="font-mono text-xs text-[#888888] mb-5">
+                {editReservation.firstName} {editReservation.lastName}
+              </p>
+
+              {/* Date Picker */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[1px]">Date</p>
+                  {editWeekDays.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditWeekOffset((o) => Math.max(0, o - 1))}
+                        disabled={editWeekOffset === 0}
+                        className="cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed hover:opacity-60 transition-opacity bg-transparent border-none p-0"
+                      >
+                        <ChevronLeft size={14} strokeWidth={1.5} />
+                      </button>
+                      <span className="font-mono text-[10px] uppercase tracking-[1px] text-[#888888]">
+                        {format(parse(editWeekDays[0].date, "yyyy-MM-dd", new Date()), "MMM d")} &ndash; {format(parse(editWeekDays[editWeekDays.length - 1].date, "yyyy-MM-dd", new Date()), "MMM d")}
+                      </span>
+                      <button
+                        onClick={() => setEditWeekOffset((o) => Math.min(maxEditWeekOffset, o + 1))}
+                        disabled={editWeekOffset >= maxEditWeekOffset}
+                        className="cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed hover:opacity-60 transition-opacity bg-transparent border-none p-0"
+                      >
+                        <ChevronRight size={14} strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-7 gap-1.5">
+                  {editWeekDays.map((day) => {
+                    const dateObj = parse(day.date, "yyyy-MM-dd", new Date());
+                    const allFull = !day.isOpen || day.slots.every((s) => s.isFull);
+                    return (
+                      <SelectionCard
+                        key={day.date}
+                        selected={editResForm.date === day.date}
+                        disabled={allFull}
+                        onClick={() => {
+                          setEditResForm((prev) => ({ ...prev, date: day.date, time: "" }));
+                        }}
+                      >
+                        <span className="block font-mono text-[9px] uppercase tracking-[1px]">
+                          {format(dateObj, "EEE")}
+                        </span>
+                        <span className="block font-mono text-xl font-bold leading-tight">
+                          {format(dateObj, "d")}
+                        </span>
+                        <span className="block font-mono text-[9px] uppercase tracking-[1px]">
+                          {format(dateObj, "MMM")}
+                        </span>
+                      </SelectionCard>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time Slots */}
+              {editResForm.date && (
+                <div className="mb-5">
+                  <p className="font-mono text-[10px] uppercase tracking-[1px] mb-3">Time</p>
+                  {selectedDaySlots.length === 0 ? (
+                    <p className="font-serif text-xs italic text-[#888888]">No available time slots for this day.</p>
+                  ) : (
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {selectedDaySlots.map((slot) => {
+                        const timeObj = parse(slot.time, "HH:mm", new Date());
+                        const remaining = slot.maxCapacity - slot.currentGuests;
+                        const isLimited = !slot.isFull && remaining <= 3;
+                        return (
+                          <SelectionCard
+                            key={slot.time}
+                            selected={editResForm.time === slot.time}
+                            disabled={slot.isFull}
+                            onClick={() => setEditResForm((prev) => ({ ...prev, time: slot.time }))}
+                          >
+                            <span className="font-mono text-[11px] tracking-[0.5px]">
+                              {format(timeObj, "h:mm a")}
+                            </span>
+                            {slot.isFull && (
+                              <span className="block font-mono text-[8px] uppercase tracking-[1px] mt-0.5">Full</span>
+                            )}
+                            {isLimited && (
+                              <span className="block font-mono text-[8px] uppercase tracking-[1px] mt-0.5 text-[#888888]">
+                                {remaining} left
+                              </span>
+                            )}
+                          </SelectionCard>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Party Size & Notes */}
+              {editResForm.time && (
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                      Party Size
+                    </label>
+                    <select
+                      value={editResForm.partySize}
+                      onChange={(e) => setEditResForm((prev) => ({ ...prev, partySize: parseInt(e.target.value) }))}
+                      className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D] bg-white"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                        <option key={n} value={n}>{n === 9 ? "8+" : n} {n === 1 ? "guest" : "guests"}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-[1px] text-[#0D0D0D] mb-1.5 block">
+                      Special Notes
+                    </label>
+                    <input
+                      type="text"
+                      value={editResForm.specialNotes}
+                      onChange={(e) => setEditResForm((prev) => ({ ...prev, specialNotes: e.target.value }))}
+                      placeholder="e.g. Anniversary dinner, window seat preferred"
+                      className="w-full border border-[#E0E0E0] rounded-none px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-[#0D0D0D]"
+                    />
+                  </div>
+                  <Button onClick={saveEditReservation}>Save Changes</Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        );
+      })()}
 
       {/* Delete Confirmation Dialog */}
       {deleteTarget && (
