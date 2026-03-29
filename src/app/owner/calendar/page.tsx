@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   format,
   startOfMonth,
@@ -16,6 +16,7 @@ import {
   parse,
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Users, X, AlertTriangle } from "lucide-react";
+import { formatTime12, addMinutesToTime } from "@/lib/formatting";
 
 interface Reservation {
   id: string;
@@ -50,24 +51,6 @@ const LEGEND_ITEMS = [
   { status: "NO_SHOW", label: "No Show" },
 ];
 
-// TODO: move these two helpers to src/lib/formatting.ts — nearly identical
-// versions also live in settings/page.tsx.
-
-function formatTime12(time24: string): string {
-  const [h, m] = time24.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
-
-// Adds minutes to an "HH:mm" string, returning the result as "H:mm".
-function addMinutes(time24: string, mins: number): string {
-  const [h, m] = time24.split(":").map(Number);
-  const totalMins = h * 60 + m + mins;
-  const newH = Math.floor(totalMins / 60) % 24;
-  const newM = totalMins % 60;
-  return `${newH}:${newM.toString().padStart(2, "0")}`;
-}
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -83,21 +66,23 @@ export default function CalendarPage() {
       .catch(console.error);
   }, [currentMonth]);
 
-  // Group reservations by date
-  const resByDay = new Map<string, Reservation[]>();
-  for (const r of reservations) {
-    if (r.status !== "CANCELLED") {
-      const list = resByDay.get(r.date) || [];
-      list.push(r);
-      resByDay.set(r.date, list);
+  // Group reservations by date and compute per-day cover counts.
+  // Memoized so the maps aren't rebuilt on every render (e.g. when modal opens).
+  const { resByDay, coversByDay } = useMemo(() => {
+    const resByDay = new Map<string, Reservation[]>();
+    for (const r of reservations) {
+      if (r.status !== "CANCELLED") {
+        const list = resByDay.get(r.date) || [];
+        list.push(r);
+        resByDay.set(r.date, list);
+      }
     }
-  }
-
-  // Compute covers per day
-  const coversByDay = new Map<string, number>();
-  for (const [date, list] of resByDay) {
-    coversByDay.set(date, list.reduce((sum, r) => sum + r.partySize, 0));
-  }
+    const coversByDay = new Map<string, number>();
+    for (const [date, list] of resByDay) {
+      coversByDay.set(date, list.reduce((sum, r) => sum + r.partySize, 0));
+    }
+    return { resByDay, coversByDay };
+  }, [reservations]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -121,11 +106,13 @@ export default function CalendarPage() {
     week.some((d) => isSameMonth(d, currentMonth))
   );
 
-  // Get reservations for selected date
   const selectedDateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
-  const selectedReservations = selectedDate
-    ? (resByDay.get(selectedDateStr) || []).sort((a, b) => a.time.localeCompare(b.time))
-    : [];
+  const selectedReservations = useMemo(() => {
+    if (!selectedDate) return [];
+    return [...(resByDay.get(selectedDateStr) || [])].sort((a, b) =>
+      a.time.localeCompare(b.time)
+    );
+  }, [selectedDate, selectedDateStr, resByDay]);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -352,7 +339,7 @@ export default function CalendarPage() {
                     <div className="font-mono text-[11px] text-[#888888] flex items-center gap-2 mb-1 leading-none">
                       {/* TODO: read maxSeatingDuration from settings instead of hard-coding 75 min */}
                       <span>
-                        {formatTime12(r.time)} — {formatTime12(addMinutes(r.time, 75))}
+                        {formatTime12(r.time)} — {formatTime12(addMinutesToTime(r.time, 75))}
                       </span>
                       <span className="inline-flex items-center gap-0.5">
                         <Users size={10} strokeWidth={1.5} className="relative top-[0.5px]" />

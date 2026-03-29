@@ -36,6 +36,16 @@ interface Branding {
   iconValue: string;
 }
 
+const EMPTY_FORM: FormData = {
+  firstName: "",
+  lastName: "",
+  instagram: "",
+  phone: "",
+  partySize: 2,
+  allergies: "",
+  specialNotes: "",
+};
+
 const ALL_PARTY_OPTIONS = [
   { value: "1", label: "1 guest" },
   { value: "2", label: "2 guests" },
@@ -53,15 +63,7 @@ export default function BookingPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
-    instagram: "",
-    phone: "",
-    partySize: 2,
-    allergies: "",
-    specialNotes: "",
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
@@ -91,13 +93,15 @@ export default function BookingPage() {
   }, [availability]);
 
   const weekAvailability = useMemo(() => {
+    // Index by date string for O(1) lookups instead of O(n) find per day.
+    const availabilityByDate = new Map(availability.map((a) => [a.date, a]));
     const today = new Date();
     const startDay = weekOffset * 7;
     const days: DayAvailability[] = [];
     for (let i = startDay; i < startDay + 7; i++) {
       const d = addDays(today, i);
       const dateStr = format(d, "yyyy-MM-dd");
-      const existing = availability.find((a) => a.date === dateStr);
+      const existing = availabilityByDate.get(dateStr);
       if (existing) {
         days.push(existing);
       } else if (i < availability.length) {
@@ -232,7 +236,7 @@ export default function BookingPage() {
             setConfirmation(null);
             setSelectedDate(null);
             setSelectedTime(null);
-            setFormData({ firstName: "", lastName: "", instagram: "", phone: "", partySize: 2, allergies: "", specialNotes: "" });
+            setFormData(EMPTY_FORM);
             // Hard refresh availability to reflect updated capacity
             fetch("/api/availability")
               .then((res) => res.json())

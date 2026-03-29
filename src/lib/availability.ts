@@ -10,13 +10,13 @@ export function countOverlappingGuests(
   slotTime: string,
   occupancyDuration: number
 ): number {
-  const slot = parse(slotTime, "HH:mm", new Date());
+  const slotStart = parse(slotTime, "HH:mm", new Date());
   let total = 0;
-  for (const res of reservations) {
-    const resStart = parse(res.time, "HH:mm", new Date());
-    const resEnd = addMinutes(resStart, occupancyDuration);
-    if (slot >= resStart && slot < resEnd) {
-      total += res.partySize;
+  for (const reservation of reservations) {
+    const reservationStart = parse(reservation.time, "HH:mm", new Date());
+    const reservationEnd = addMinutes(reservationStart, occupancyDuration);
+    if (slotStart >= reservationStart && slotStart < reservationEnd) {
+      total += reservation.partySize;
     }
   }
   return total;

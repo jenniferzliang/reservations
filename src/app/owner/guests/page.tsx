@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Phone, Trash2, Calendar, Clock, Users, TriangleAlert, X, GitMerge } from "lucide-react";
@@ -172,16 +172,14 @@ export default function GuestsPage() {
     setMergeTargetId("");
   }
 
-  const filteredReservations = reservations.filter((r) => {
+  const filteredReservations = useMemo(() => reservations.filter((r) => {
     if (r.date !== dateFilter) return false;
-
     const matchesSearch =
       !search ||
       `${r.firstName} ${r.lastName} ${r.phone} ${r.instagram || ""}`
         .toLowerCase()
         .includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || r.status === statusFilter;
-
     if (bookingTab === "upcoming") {
       return matchesSearch && matchesStatus && (r.status === "CONFIRMED" || r.status === "ARRIVED");
     }
@@ -189,18 +187,18 @@ export default function GuestsPage() {
       return matchesSearch && matchesStatus && r.status !== "CONFIRMED" && r.status !== "ARRIVED";
     }
     return matchesSearch && matchesStatus;
-  });
+  }), [reservations, dateFilter, search, statusFilter, bookingTab]);
 
-  const filteredGuests = guests.filter(
+  const filteredGuests = useMemo(() => guests.filter(
     (g) =>
       !search ||
       `${g.firstName} ${g.lastName} ${g.phone} ${g.instagram || ""}`
         .toLowerCase()
         .includes(search.toLowerCase())
-  );
+  ), [guests, search]);
 
   // Overview computed values
-  const overviewGuests = guests
+  const overviewGuests = useMemo(() => guests
     .filter(
       (g) =>
         !overviewSearch ||
@@ -212,13 +210,13 @@ export default function GuestsPage() {
       if (overviewSort === "most") return b.visitCount - a.visitCount;
       if (overviewSort === "recent") return new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
       return new Date(a.firstVisit).getTime() - new Date(b.firstVisit).getTime();
-    });
+    }), [guests, overviewSearch, overviewSort]);
 
   const totalGuests = guests.length;
-  const returningGuests = guests.filter((g) => g.visitCount > 1).length;
-  const vipGuests = guests.filter((g) => g.visitCount >= 10).length;
-  const avgVisits = totalGuests > 0 ? (guests.reduce((sum, g) => sum + g.visitCount, 0) / totalGuests).toFixed(1) : "0";
-  const allergyNotes = guests.filter((g) => g.allergies).length;
+  const returningGuests = useMemo(() => guests.filter((g) => g.visitCount > 1).length, [guests]);
+  const vipGuests = useMemo(() => guests.filter((g) => g.visitCount >= 10).length, [guests]);
+  const avgVisits = useMemo(() => totalGuests > 0 ? (guests.reduce((sum, g) => sum + g.visitCount, 0) / totalGuests).toFixed(1) : "0", [guests, totalGuests]);
+  const allergyNotes = useMemo(() => guests.filter((g) => g.allergies).length, [guests]);
 
   function relativeTime(dateStr: string) {
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));

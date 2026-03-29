@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { format, parse } from "date-fns";
 import { ReservationCard, type Reservation } from "./ReservationCard";
 import { QuickAddModal } from "./QuickAddModal";
@@ -48,25 +48,27 @@ export default function ManifestPage() {
   const totalCovers = activeReservations.reduce((sum, r) => sum + r.partySize, 0);
   const completed = reservations.filter((r) => r.status === "COMPLETED");
 
-  // Sort: Overdue CONFIRMED first, then ARRIVED, then upcoming CONFIRMED, then rest
-  const now = new Date();
-  function getSortKey(r: Reservation): number {
-    if (r.status === "CONFIRMED") {
-      const slotTime = parse(`${dateParam} ${r.time}`, "yyyy-MM-dd HH:mm", new Date());
-      if (slotTime <= now) return 0;
-      return 2;
+  // Sort: Overdue CONFIRMED first, then ARRIVED, then upcoming CONFIRMED, then rest.
+  // Memoized because it re-parses every reservation time on each render otherwise.
+  const sortedReservations = useMemo(() => {
+    const now = new Date();
+    function getSortKey(r: Reservation): number {
+      if (r.status === "CONFIRMED") {
+        const slotTime = parse(`${dateParam} ${r.time}`, "yyyy-MM-dd HH:mm", new Date());
+        return slotTime <= now ? 0 : 2;
+      }
+      if (r.status === "ARRIVED") return 1;
+      if (r.status === "NO_SHOW") return 3;
+      if (r.status === "COMPLETED") return 4;
+      return 9;
     }
-    if (r.status === "ARRIVED") return 1;
-    if (r.status === "NO_SHOW") return 3;
-    if (r.status === "COMPLETED") return 4;
-    return 9;
-  }
-  const sortedReservations = [...activeReservations].sort((a, b) => {
-    const sa = getSortKey(a);
-    const sb = getSortKey(b);
-    if (sa !== sb) return sa - sb;
-    return a.time.localeCompare(b.time);
-  });
+    return [...activeReservations].sort((a, b) => {
+      const sa = getSortKey(a);
+      const sb = getSortKey(b);
+      if (sa !== sb) return sa - sb;
+      return a.time.localeCompare(b.time);
+    });
+  }, [activeReservations, dateParam]);
 
   const dateObj = parse(dateParam, "yyyy-MM-dd", new Date());
 

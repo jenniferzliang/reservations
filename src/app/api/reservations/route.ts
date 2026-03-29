@@ -62,55 +62,33 @@ export async function POST(request: Request) {
 
     // Find or create a guest record keyed by (firstName, lastName, phone).
     // autoMerge controls whether repeat guests update their existing profile
-    // (preserving visit history) vs always creating a fresh one.
+    // (name, instagram, allergies) or only increment visit stats.
     const autoMerge = settings?.autoMergeDuplicates ?? true;
-    let guest;
-
-    if (autoMerge) {
-      guest = await tx.guest.upsert({
-        where: { firstName_lastName_phone: { firstName: data.firstName, lastName: data.lastName, phone } },
-        update: {
+    const guest = await tx.guest.upsert({
+      where: { firstName_lastName_phone: { firstName: data.firstName, lastName: data.lastName, phone } },
+      update: {
+        visitCount: { increment: 1 },
+        lastVisit: new Date(),
+        totalGuests: { increment: data.partySize },
+        ...(autoMerge && {
           firstName: data.firstName,
           lastName: data.lastName,
           instagram: data.instagram || undefined,
-          visitCount: { increment: 1 },
-          lastVisit: new Date(),
-          totalGuests: { increment: data.partySize },
           allergies: data.allergies || undefined,
-        },
-        create: {
-          phone,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          instagram: data.instagram || undefined,
-          visitCount: 1,
-          firstVisit: new Date(),
-          lastVisit: new Date(),
-          totalGuests: data.partySize,
-          allergies: data.allergies || undefined,
-        },
-      });
-    } else {
-      guest = await tx.guest.upsert({
-        where: { firstName_lastName_phone: { firstName: data.firstName, lastName: data.lastName, phone } },
-        update: {
-          visitCount: { increment: 1 },
-          lastVisit: new Date(),
-          totalGuests: { increment: data.partySize },
-        },
-        create: {
-          phone,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          instagram: data.instagram || undefined,
-          visitCount: 1,
-          firstVisit: new Date(),
-          lastVisit: new Date(),
-          totalGuests: data.partySize,
-          allergies: data.allergies || undefined,
-        },
-      });
-    }
+        }),
+      },
+      create: {
+        phone,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        instagram: data.instagram || undefined,
+        visitCount: 1,
+        firstVisit: new Date(),
+        lastVisit: new Date(),
+        totalGuests: data.partySize,
+        allergies: data.allergies || undefined,
+      },
+    });
 
     const reservation = await tx.reservation.create({
       data: {

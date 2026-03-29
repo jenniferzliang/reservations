@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
+import { formatTime12 } from "@/lib/formatting";
 import {
   Save,
   ChevronLeft,
@@ -72,13 +73,6 @@ const DAYS = [
   "sunday",
 ];
 
-function formatTime12(time24: string): string {
-  const [h, m] = time24.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${String(h12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`;
-}
-
 function Toggle({
   checked,
   onChange,
@@ -138,12 +132,6 @@ export default function SettingsPage() {
         };
         setSettings(s);
         savedSettingsRef.current = JSON.stringify(s);
-      })
-      .catch(console.error);
-
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data) => {
         if (data.blockedDates) setBlockedDates(data.blockedDates);
       })
       .catch(console.error);
