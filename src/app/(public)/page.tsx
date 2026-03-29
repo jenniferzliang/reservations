@@ -36,6 +36,14 @@ interface Branding {
   iconValue: string;
 }
 
+const DEFAULT_BRANDING: Branding = {
+  restaurantName: "My Restaurant",
+  heroHeading: "Reserve Your\nTable.",
+  heroSubtext: "Book your experience with us.",
+  iconType: "emoji",
+  iconValue: "",
+};
+
 const EMPTY_FORM: FormData = {
   firstName: "",
   lastName: "",
@@ -68,13 +76,7 @@ export default function BookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [branding, setBranding] = useState<Branding>({
-    restaurantName: "My Restaurant",
-    heroHeading: "Reserve Your\nTable.",
-    heroSubtext: "Book your experience with us.",
-    iconType: "emoji",
-    iconValue: "",
-  });
+  const [branding, setBranding] = useState<Branding | null>(null);
 
   useEffect(() => {
     fetch("/api/availability")
@@ -83,8 +85,8 @@ export default function BookingPage() {
       .catch(console.error);
     fetch("/api/branding")
       .then((res) => { if (res.ok) return res.json(); })
-      .then((data) => { if (data) setBranding(data); })
-      .catch(console.error);
+      .then((data) => { setBranding(data ?? DEFAULT_BRANDING); })
+      .catch(() => { setBranding(DEFAULT_BRANDING); });
   }, []);
 
   const maxWeekOffset = useMemo(() => {
@@ -197,6 +199,10 @@ export default function BookingPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (!branding) {
+    return <main className="max-w-[600px] mx-auto px-6 py-16" />;
   }
 
   if (confirmation) {
