@@ -26,12 +26,14 @@ interface Reservation {
   partySize: number;
   firstName: string;
   lastName: string;
-  phone: string;
-  instagram?: string;
-  allergies?: string;
   specialNotes?: string;
   status: string;
   guest: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    instagram?: string;
+    allergies?: string;
     visitCount: number;
   };
 }
@@ -243,7 +245,7 @@ export default function CalendarPage() {
                           className="font-mono text-[10px] px-1.5 py-0.5 rounded-none mb-0.5 truncate"
                           style={{ backgroundColor: colors.bg, color: colors.text }}
                         >
-                          {formatTime12(r.time)} {r.firstName} {r.lastName.charAt(0)}.
+                          {formatTime12(r.time)} {r.guest.firstName} {r.guest.lastName.charAt(0)}.
                         </div>
                       );
                     })}
@@ -327,11 +329,11 @@ export default function CalendarPage() {
                     <div className="flex items-start justify-between mb-1">
                       <div>
                         <span className="font-mono text-sm font-bold">
-                          {r.firstName} {r.lastName}
+                          {r.guest.firstName} {r.guest.lastName}
                         </span>
-                        {r.instagram && (
+                        {r.guest.instagram && (
                           <span className="font-mono text-[11px] text-[#888888] ml-2">
-                            @{r.instagram.replace(/^@/, "")}
+                            @{r.guest.instagram.replace(/^@/, "")}
                           </span>
                         )}
                       </div>

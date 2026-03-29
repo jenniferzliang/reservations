@@ -34,6 +34,13 @@ interface Reservation {
   allergies?: string;
   status: string;
   specialNotes?: string;
+  guest: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    instagram?: string;
+    allergies?: string;
+  };
 }
 
 interface Analytics {
@@ -217,7 +224,7 @@ export default function GuestsPage() {
     if (r.date !== dateFilter) return false;
     const matchesSearch =
       !search ||
-      `${r.firstName} ${r.lastName} ${r.phone} ${r.instagram || ""}`
+      `${r.guest.firstName} ${r.guest.lastName} ${r.guest.phone} ${r.guest.instagram || ""}`
         .toLowerCase()
         .includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || r.status === statusFilter;
@@ -494,16 +501,16 @@ export default function GuestsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono font-bold text-sm">
-                      {r.firstName} {r.lastName}
+                      {r.guest.firstName} {r.guest.lastName}
                     </span>
-                    {r.instagram && (
+                    {r.guest.instagram && (
                       <span className="font-mono text-xs text-[#888888] inline-flex items-center gap-1">
                         <InstagramIcon />
-                        @{r.instagram.replace(/^@/, "")}
+                        @{r.guest.instagram.replace(/^@/, "")}
                       </span>
                     )}
                     <span className="font-mono text-xs text-[#888888] flex items-center gap-1">
-                      <Phone size={12} strokeWidth={1.5} /> {r.phone}
+                      <Phone size={12} strokeWidth={1.5} /> {r.guest.phone}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
@@ -539,13 +546,13 @@ export default function GuestsPage() {
                   <Calendar size={10} strokeWidth={1.5} /> {r.date} &nbsp; <Clock size={10} strokeWidth={1.5} /> {r.time} &nbsp;
                   <Users size={10} strokeWidth={1.5} /> {r.partySize}
                 </p>
-                {r.allergies && (
+                {r.guest.allergies && (
                   <div className="bg-[#FEF2F2] rounded-none px-3 py-1.5 mt-2 flex items-center gap-2">
                     <span className="font-mono text-[10px] uppercase tracking-[1px] text-[#C45C4A] flex items-center gap-1">
                       <TriangleAlert size={11} strokeWidth={1.5} /> Allergy:
                     </span>
                     <span className="font-mono text-xs text-[#C45C4A]">
-                      {r.allergies}
+                      {r.guest.allergies}
                     </span>
                   </div>
                 )}
@@ -779,7 +786,7 @@ export default function GuestsPage() {
             </div>
             <div className="px-6 pb-6">
               <p className="font-mono text-xs text-[#888888] mb-5">
-                {editReservation.firstName} {editReservation.lastName}
+                {editReservation.guest.firstName} {editReservation.guest.lastName}
               </p>
 
               {/* Date Picker */}
@@ -936,7 +943,7 @@ export default function GuestsPage() {
             </div>
             <div className="px-6 pb-6">
               <p className="font-serif text-sm mb-1">
-                Are you sure you want to delete the reservation for <strong>{deleteTarget.firstName} {deleteTarget.lastName}</strong>?
+                Are you sure you want to delete the reservation for <strong>{deleteTarget.guest.firstName} {deleteTarget.guest.lastName}</strong>?
               </p>
               <p className="font-mono text-[10px] text-[#888888] mb-3">
                 {deleteTarget.date} &middot; {deleteTarget.time} &middot; Party of {deleteTarget.partySize}

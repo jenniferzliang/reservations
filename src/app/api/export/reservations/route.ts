@@ -9,6 +9,7 @@ export async function GET() {
   }
 
   const reservations = await prisma.reservation.findMany({
+    include: { guest: true },
     orderBy: [{ date: "desc" }, { time: "asc" }],
   });
 
@@ -20,11 +21,11 @@ export async function GET() {
       r.date,
       r.time,
       r.partySize,
-      `"${r.firstName}"`,
-      `"${r.lastName}"`,
-      r.phone,
-      r.instagram || "",
-      `"${r.allergies || ""}"`,
+      `"${r.guest.firstName}"`,
+      `"${r.guest.lastName}"`,
+      r.guest.phone,
+      r.guest.instagram || "",
+      `"${r.guest.allergies || ""}"`,
       `"${(r.specialNotes || "").replace(/"/g, '""')}"`,
       r.status,
     ].join(",")

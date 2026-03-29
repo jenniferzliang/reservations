@@ -16,6 +16,11 @@ export interface Reservation {
   isWalkIn?: boolean;
   status: string;
   guest: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    instagram?: string;
+    allergies?: string;
     visitCount: number;
   };
 }
@@ -139,7 +144,7 @@ export function ReservationCard({ reservation: r, dateParam, maxSeatingDuration,
         <div>
           <div className="flex items-center gap-3 mb-1">
             <span className="font-mono text-lg font-bold">
-              {r.firstName} {r.lastName}
+              {r.guest.firstName} {r.guest.lastName}
             </span>
             {r.isWalkIn && (
               <span className="font-mono text-[10px] border border-warning-border bg-warning-bg text-warning-text px-2 py-0.5 rounded-none uppercase">
@@ -155,21 +160,21 @@ export function ReservationCard({ reservation: r, dateParam, maxSeatingDuration,
           <div className="flex items-center gap-4 text-secondary">
             <span className="font-mono text-xs inline-flex items-center gap-1">
               <InstagramIcon />
-              {r.instagram ? `@${r.instagram.replace(/^@/, "")}` : ""}
+              {r.guest.instagram ? `@${r.guest.instagram.replace(/^@/, "")}` : ""}
             </span>
             <span className="font-mono text-xs inline-flex items-center gap-1">
               <Users size={12} strokeWidth={1.5} className="relative top-[0.5px]" />
               {r.partySize} {r.partySize === 1 ? "cover" : "covers"}
             </span>
           </div>
-          {r.allergies && (
+          {r.guest.allergies && (
             <div className="flex items-center gap-1.5 mt-2">
               <span className="font-mono text-[10px] uppercase tracking-[1px] text-secondary inline-flex items-center gap-1">
                 <AlertTriangle size={11} strokeWidth={1.5} className="text-error relative top-[0.5px]" />
                 Allergy:
               </span>
               <span className="font-mono text-[10px] text-error">
-                {r.allergies}
+                {r.guest.allergies}
               </span>
             </div>
           )}
