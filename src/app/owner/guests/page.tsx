@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { format, parse, addDays } from "date-fns";
 import { Button } from "@/components/ui/Button";
@@ -65,7 +65,7 @@ function InstagramIcon({ size = 12 }: { size?: number }) {
   );
 }
 
-export default function GuestsPage() {
+function GuestsPageContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") === "bookings" ? "bookings" as Tab : "overview" as Tab;
   const initialDate = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
@@ -1079,5 +1079,13 @@ export default function GuestsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GuestsPage() {
+  return (
+    <Suspense>
+      <GuestsPageContent />
+    </Suspense>
   );
 }
