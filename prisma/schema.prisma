@@ -41,7 +41,6 @@ model Reservation {
   date      String   // "YYYY-MM-DD"
   time      String   // "HH:mm"
   partySize Int
-  confirmationCode String? @unique
   // Guest info is intentionally denormalized here as a point-in-time snapshot.
   // This preserves the guest's details as they were at booking time, even if
   // the Guest record is later updated or merged.
