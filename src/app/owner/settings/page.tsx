@@ -200,7 +200,7 @@ export default function SettingsPage() {
     setSaving(false);
     if (res.ok) {
       setSaved(true);
-      window.location.reload();
+      savedSettingsRef.current = JSON.stringify(settings);
     }
   }
 
@@ -230,11 +230,18 @@ export default function SettingsPage() {
 
   function updateDay(day: string, field: string, value: boolean | string) {
     if (!settings) return;
+    const current = settings.operatingHours[day] || { open: false };
+    const updated = { ...current, [field]: value };
+    // When toggling a day open, ensure it has default start/end times
+    if (field === "open" && value === true && !updated.start) {
+      updated.start = "11:00";
+      updated.end = "21:00";
+    }
     setSettings({
       ...settings,
       operatingHours: {
         ...settings.operatingHours,
-        [day]: { ...settings.operatingHours[day], [field]: value },
+        [day]: updated,
       },
     });
   }
